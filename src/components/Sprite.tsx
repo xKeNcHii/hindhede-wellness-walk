@@ -1,4 +1,4 @@
-const SPRITES: Record<string, string> = {
+export const SPRITES: Record<string, string> = {
   gate: "⛩️",
   tree: "🌳",
   swing: "🛝",

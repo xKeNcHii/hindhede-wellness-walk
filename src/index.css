@@ -34,6 +34,40 @@ button {
   box-shadow: inset 0 0 0 2px #2f9c5e, 4px 4px 0 0 rgba(0, 0, 0, 0.45);
 }
 
+/* Leaflet checkpoint + player markers */
+.cp-marker { background: none; border: none; }
+.cp-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+.cp-pin .cp-emoji {
+  font-size: 22px;
+  padding: 3px;
+  border: 3px solid #0b1a12;
+  background: #1f6b3f;
+  box-shadow: inset 0 0 0 2px #2f9c5e;
+}
+.cp-pin.cp-off .cp-emoji {
+  background: #0b1a12;
+  opacity: 0.8;
+}
+.cp-pin .cp-num {
+  margin-top: 2px;
+  font-family: inherit;
+  font-size: 8px;
+  color: #f4e9d0;
+  background: rgba(11, 26, 18, 0.85);
+  padding: 0 3px;
+}
+.player-pin {
+  font-size: 26px;
+  line-height: 1;
+  filter: drop-shadow(0 0 3px #2f9c5e);
+  animation: pop 0.5s ease-out;
+}
+
 @keyframes wiggle {
   0%, 100% { transform: rotate(-6deg); }
   50% { transform: rotate(6deg); }

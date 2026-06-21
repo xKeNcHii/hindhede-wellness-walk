@@ -1,7 +1,11 @@
+import { useEffect, useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { useGameStore } from "../store/useGameStore";
-import { CHECKPOINTS, projectToMap, Checkpoint } from "../data/types";
+import { CHECKPOINTS, Checkpoint } from "../data/types";
 import { haversine, formatDistance } from "../lib/geo";
-import { Sprite } from "./Sprite";
+import { Sprite, SPRITES } from "./Sprite";
 import { PixelButton } from "./PixelButton";
 import { METRES_PER_EGG } from "../data/creatures";
 
@@ -12,18 +16,60 @@ interface Props {
 
 const MANUAL_RANGE_M = 120; // show "I'm here" button when roughly near
 
+// Park centre (average of the checkpoint cluster) used as the initial view.
+const PARK_CENTER: [number, number] = [1.34874, 103.77573];
+
+function checkpointIcon(emoji: string, order: number, unlocked: boolean) {
+  return L.divIcon({
+    className: "cp-marker",
+    html: `<div class="cp-pin ${unlocked ? "cp-on" : "cp-off"}">
+        <span class="cp-emoji">${emoji}</span>
+        <span class="cp-num">${order}</span>
+      </div>`,
+    iconSize: [40, 50],
+    iconAnchor: [20, 46],
+  });
+}
+
+const playerIcon = L.divIcon({
+  className: "cp-marker",
+  html: `<div class="player-pin">${SPRITES.player}</div>`,
+  iconSize: [30, 30],
+  iconAnchor: [15, 15],
+});
+
+/** On first mount, frame the whole route so all checkpoints are visible. */
+function FitRoute() {
+  const map = useMap();
+  useEffect(() => {
+    const bounds = L.latLngBounds(CHECKPOINTS.map((c) => [c.lat, c.lng] as [number, number]));
+    map.fitBounds(bounds, { padding: [40, 40] });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}
+
+/** Pan to the player the first time we get a GPS fix. */
+function FollowPlayer({ coord }: { coord: { lat: number; lng: number } | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (coord) map.setView([coord.lat, coord.lng], 17, { animate: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coord?.lat, coord?.lng]);
+  return null;
+}
+
 export function MapView({ unlockedIds, onOpenCheckpoint }: Props) {
   const distance = useGameStore((s) => s.distance);
   const lastFix = useGameStore((s) => s.lastFix);
   const gpsStatus = useGameStore((s) => s.gpsStatus);
   const accuracy = useGameStore((s) => s.accuracy);
 
-  const player = lastFix ? projectToMap(lastFix.coord) : null;
+  const player = lastFix?.coord ?? null;
 
   const withDistance = CHECKPOINTS.map((c) => {
-    const dist = lastFix ? haversine(lastFix.coord, { lat: c.lat, lng: c.lng }) : null;
-    const pos = c.img ?? projectToMap({ lat: c.lat, lng: c.lng });
-    return { c, dist, pos };
+    const dist = player ? haversine(player, { lat: c.lat, lng: c.lng }) : null;
+    return { c, dist };
   });
 
   const next = withDistance
@@ -31,6 +77,11 @@ export function MapView({ unlockedIds, onOpenCheckpoint }: Props) {
     .sort((a, b) => (a.dist ?? Infinity) - (b.dist ?? Infinity))[0];
 
   const toNextEgg = METRES_PER_EGG - (distance % METRES_PER_EGG);
+
+  const trail = useMemo<[number, number][]>(
+    () => CHECKPOINTS.map((c) => [c.lat, c.lng]),
+    []
+  );
 
   return (
     <div className="flex flex-col gap-3 p-3">
@@ -46,71 +97,39 @@ export function MapView({ unlockedIds, onOpenCheckpoint }: Props) {
         </div>
       </div>
 
-      {/* The map */}
-      <div
-        className="relative w-full pixel-border overflow-hidden bg-forest-900"
-        style={{ aspectRatio: "1100 / 1489" }}
-      >
-        <img
-          src="/park-map.png"
-          alt="Hindhede Nature Park map"
-          className="absolute inset-0 w-full h-full object-cover"
-          draggable={false}
-        />
-
-        {/* trail line connecting checkpoints */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <polyline
-            points={withDistance.map((w) => `${w.pos.x * 100},${w.pos.y * 100}`).join(" ")}
-            fill="none"
-            stroke="#0b1a12"
-            strokeWidth="1.5"
-            strokeDasharray="3 2"
-            opacity="0.8"
+      {/* The real map */}
+      <div className="pixel-border overflow-hidden" style={{ height: "58vh" }}>
+        <MapContainer
+          center={PARK_CENTER}
+          zoom={17}
+          scrollWheelZoom
+          style={{ height: "100%", width: "100%" }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={19}
           />
-        </svg>
 
-        {/* checkpoint pins */}
-        {withDistance.map((w) => {
-          const unlocked = unlockedIds.has(w.c.id);
-          return (
-            <button
-              key={w.c.id}
-              onClick={() => onOpenCheckpoint(w.c)}
-              className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
-              style={{ left: `${w.pos.x * 100}%`, top: `${w.pos.y * 100}%` }}
-            >
-              <div
-                className={`pixel-border p-1 ${
-                  unlocked ? "bg-forest-700" : "bg-forest-950 opacity-80"
-                }`}
-              >
-                <Sprite name={w.c.sprite} size={20} />
-              </div>
-              <span className="mt-1 text-[7px] text-sand bg-forest-950/80 px-1">
-                {w.c.order}
-              </span>
-            </button>
-          );
-        })}
+          <Polyline
+            positions={trail}
+            pathOptions={{ color: "#0b1a12", weight: 3, dashArray: "6 6", opacity: 0.85 }}
+          />
 
-        {/* player */}
-        {player && (
-          <div
-            className="absolute -translate-x-1/2 -translate-y-1/2 animate-pop"
-            style={{ left: `${player.x * 100}%`, top: `${player.y * 100}%` }}
-          >
-            <Sprite name="player" size={22} />
-          </div>
-        )}
+          {CHECKPOINTS.map((c) => (
+            <Marker
+              key={c.id}
+              position={[c.lat, c.lng]}
+              icon={checkpointIcon(SPRITES[c.sprite] ?? "❓", c.order, unlockedIds.has(c.id))}
+              eventHandlers={{ click: () => onOpenCheckpoint(c) }}
+            />
+          ))}
 
-        {!player && (
-          <div className="absolute inset-0 flex items-center justify-center text-center text-[9px] text-forest-300 p-6">
-            {gpsStatus === "denied"
-              ? "Location blocked. Enable it in your browser to appear on the map."
-              : "Finding you on the trail…"}
-          </div>
-        )}
+          {player && <Marker position={[player.lat, player.lng]} icon={playerIcon} />}
+
+          <FitRoute />
+          <FollowPlayer coord={player} />
+        </MapContainer>
       </div>
 
       {/* GPS status */}

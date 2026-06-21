@@ -1,17 +1,16 @@
 [
   {
-    "id": "visitor-centre",
+    "id": "gathering-point",
     "order": 1,
-    "name": "Visitor Centre",
-    "sprite": "gate",
-    "lat": 1.34865,
-    "lng": 103.77715,
-    "radius": 35,
-    "img": { "x": 0.70, "y": 0.585 },
+    "name": "Gathering Point",
+    "sprite": "flag",
+    "lat": 1.343612,
+    "lng": 103.779368,
+    "radius": 40,
     "type": "standard",
     "wellness": {
       "title": "Arrive & Breathe",
-      "body": "Before you start, take 3 slow breaths. In for 4 counts, hold for 4, out for 6. Notice how your body already feels a little lighter. Today is about presence, not pace."
+      "body": "You've made it — well done. Before we head to the trail, take 3 slow breaths together. In for 4 counts, hold for 4, out for 6. Let the morning's rush settle. Today is about presence, not pace."
     },
     "activity": {
       "title": "Set an Intention",
@@ -19,14 +18,31 @@
     }
   },
   {
-    "id": "gaharu-hut",
+    "id": "starting-point",
     "order": 2,
+    "name": "Starting Point",
+    "sprite": "gate",
+    "lat": 1.347671,
+    "lng": 103.775919,
+    "radius": 35,
+    "type": "standard",
+    "wellness": {
+      "title": "Begin with Awareness",
+      "body": "This is where the walk really starts. As you step onto the trail, notice the change underfoot and the shade of the trees. Drop your shoulders, unclench your jaw, and let your pace slow to match the forest."
+    },
+    "activity": {
+      "title": "First Steps Together",
+      "body": "Head off as a team — no one walks alone. For the first minute, walk in silence and simply notice your breathing and the sounds around you."
+    }
+  },
+  {
+    "id": "gaharu-hut",
+    "order": 3,
     "name": "Gaharu Hut",
     "sprite": "tree",
-    "lat": 1.34900,
-    "lng": 103.77640,
+    "lat": 1.348412,
+    "lng": 103.776056,
     "radius": 35,
-    "img": { "x": 0.57, "y": 0.595 },
     "type": "standard",
     "wellness": {
       "title": "Grounding (5-4-3-2-1)",
@@ -39,13 +55,12 @@
   },
   {
     "id": "waringin-hut",
-    "order": 3,
+    "order": 4,
     "name": "Waringin Hut & Playground",
     "sprite": "swing",
-    "lat": 1.34915,
-    "lng": 103.77590,
+    "lat": 1.348597,
+    "lng": 103.775616,
     "radius": 35,
-    "img": { "x": 0.44, "y": 0.595 },
     "type": "standard",
     "wellness": {
       "title": "Play is Good for You",
@@ -58,13 +73,12 @@
   },
   {
     "id": "pulai-hut",
-    "order": 4,
+    "order": 5,
     "name": "Pulai Hut",
     "sprite": "tree",
-    "lat": 1.34955,
-    "lng": 103.77620,
+    "lat": 1.348941,
+    "lng": 103.775966,
     "radius": 35,
-    "img": { "x": 0.56, "y": 0.495 },
     "type": "standard",
     "wellness": {
       "title": "Three Good Things",
@@ -77,13 +91,12 @@
   },
   {
     "id": "lookout-point",
-    "order": 5,
+    "order": 6,
     "name": "Lookout Point",
     "sprite": "water",
-    "lat": 1.34985,
-    "lng": 103.77555,
+    "lat": 1.349353,
+    "lng": 103.774947,
     "radius": 30,
-    "img": { "x": 0.32, "y": 0.455 },
     "type": "swing",
     "wellness": {
       "title": "Widen Your View",
@@ -92,25 +105,6 @@
     "activity": {
       "title": "The Swing Forfeit",
       "body": "The teammate who has walked the LEAST distance so far takes the swing at Lookout Point — and gets a cheer from the team. Everyone else takes the photo."
-    }
-  },
-  {
-    "id": "quarry-finish",
-    "order": 6,
-    "name": "Hindhede Quarry — Finish",
-    "sprite": "flag",
-    "lat": 1.35020,
-    "lng": 103.77600,
-    "radius": 40,
-    "img": { "x": 0.52, "y": 0.27 },
-    "type": "photo",
-    "wellness": {
-      "title": "You Made It",
-      "body": "Reaching the end together is the whole point. Notice how the group feels now versus at the Visitor Centre. That shift is what the walk was for."
-    },
-    "activity": {
-      "title": "Group Photo at the Quarry",
-      "body": "Gather the whole team for a group photo with the quarry behind you. Upload it below to complete your journey."
     }
   }
 ]

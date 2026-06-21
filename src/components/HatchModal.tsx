@@ -7,7 +7,7 @@ export function HatchModal() {
   if (!pending) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-forest-950/90 flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-[1300] bg-forest-950/90 flex items-center justify-center p-6">
       <div className="pixel-border bg-forest-900 p-6 text-center flex flex-col items-center gap-3 max-w-xs">
         <div className="text-[10px] text-forest-300">AN EGG HATCHED!</div>
         <div className="text-6xl animate-pop" style={{ color: pending.color }}>

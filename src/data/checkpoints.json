@@ -1,0 +1,116 @@
+[
+  {
+    "id": "visitor-centre",
+    "order": 1,
+    "name": "Visitor Centre",
+    "sprite": "gate",
+    "lat": 1.34865,
+    "lng": 103.77715,
+    "radius": 35,
+    "img": { "x": 0.70, "y": 0.585 },
+    "type": "standard",
+    "wellness": {
+      "title": "Arrive & Breathe",
+      "body": "Before you start, take 3 slow breaths. In for 4 counts, hold for 4, out for 6. Notice how your body already feels a little lighter. Today is about presence, not pace."
+    },
+    "activity": {
+      "title": "Set an Intention",
+      "body": "As a team, each person shares one word for how they want to feel by the end of the walk. No wrong answers."
+    }
+  },
+  {
+    "id": "gaharu-hut",
+    "order": 2,
+    "name": "Gaharu Hut",
+    "sprite": "tree",
+    "lat": 1.34900,
+    "lng": 103.77640,
+    "radius": 35,
+    "img": { "x": 0.57, "y": 0.595 },
+    "type": "standard",
+    "wellness": {
+      "title": "Grounding (5-4-3-2-1)",
+      "body": "Pause under the shelter. Name 5 things you can see, 4 you can hear, 3 you can feel, 2 you can smell, 1 you can taste. This simple exercise pulls a busy mind back into the present."
+    },
+    "activity": {
+      "title": "Sound Map",
+      "body": "Stand silently for 60 seconds. Afterward, each teammate names the one sound they noticed that no one else mentioned."
+    }
+  },
+  {
+    "id": "waringin-hut",
+    "order": 3,
+    "name": "Waringin Hut & Playground",
+    "sprite": "swing",
+    "lat": 1.34915,
+    "lng": 103.77590,
+    "radius": 35,
+    "img": { "x": 0.44, "y": 0.595 },
+    "type": "standard",
+    "wellness": {
+      "title": "Play is Good for You",
+      "body": "Play lowers cortisol and boosts mood. You're allowed to be a kid for a minute. There's a playground right here — use it."
+    },
+    "activity": {
+      "title": "Playground Pause",
+      "body": "Spend 2 minutes on the playground as a team. Laughter is mandatory. Take a silly group action shot."
+    }
+  },
+  {
+    "id": "pulai-hut",
+    "order": 4,
+    "name": "Pulai Hut",
+    "sprite": "tree",
+    "lat": 1.34955,
+    "lng": 103.77620,
+    "radius": 35,
+    "img": { "x": 0.56, "y": 0.495 },
+    "type": "standard",
+    "wellness": {
+      "title": "Three Good Things",
+      "body": "Gratitude is one of the most reliable mood-boosters there is. Bring to mind three things that went well recently — they can be tiny."
+    },
+    "activity": {
+      "title": "One Good Thing",
+      "body": "Each teammate shares one good thing — at work or in life — from the past week. Keep it light."
+    }
+  },
+  {
+    "id": "lookout-point",
+    "order": 5,
+    "name": "Lookout Point",
+    "sprite": "water",
+    "lat": 1.34985,
+    "lng": 103.77555,
+    "radius": 30,
+    "img": { "x": 0.32, "y": 0.455 },
+    "type": "swing",
+    "wellness": {
+      "title": "Widen Your View",
+      "body": "Gazing at a wide, distant scene like the quarry relaxes the eyes and the nervous system. Soften your focus and take in the whole view for a moment."
+    },
+    "activity": {
+      "title": "The Swing Forfeit",
+      "body": "The teammate who has walked the LEAST distance so far takes the swing at Lookout Point — and gets a cheer from the team. Everyone else takes the photo."
+    }
+  },
+  {
+    "id": "quarry-finish",
+    "order": 6,
+    "name": "Hindhede Quarry — Finish",
+    "sprite": "flag",
+    "lat": 1.35020,
+    "lng": 103.77600,
+    "radius": 40,
+    "img": { "x": 0.52, "y": 0.27 },
+    "type": "photo",
+    "wellness": {
+      "title": "You Made It",
+      "body": "Reaching the end together is the whole point. Notice how the group feels now versus at the Visitor Centre. That shift is what the walk was for."
+    },
+    "activity": {
+      "title": "Group Photo at the Quarry",
+      "body": "Gather the whole team for a group photo with the quarry behind you. Upload it below to complete your journey."
+    }
+  }
+]

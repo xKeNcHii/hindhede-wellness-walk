@@ -50,6 +50,11 @@ interface GameState {
   resetProgress: () => void;
 }
 
+// Throttle backend writes (distance + live position) so we stay light on the
+// Supabase free tier and on battery — at most one sync per this interval.
+const SYNC_INTERVAL_MS = 6000;
+let lastSyncAt = 0;
+
 export const useGameStore = create<GameState>((set, get) => {
   const initial = loadProgress();
   return {
@@ -89,7 +94,13 @@ export const useGameStore = create<GameState>((set, get) => {
       });
       saveProgress({ distance: newDistance, hatched: nextHatched });
 
-      if (identity) void upsertParticipant(identity, newDistance);
+      if (identity) {
+        const now = Date.now();
+        if (now - lastSyncAt >= SYNC_INTERVAL_MS) {
+          lastSyncAt = now;
+          void upsertParticipant(identity, newDistance, fix.coord);
+        }
+      }
     },
 
     clearPendingHatch: () => set({ pendingHatch: null }),

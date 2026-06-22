@@ -15,8 +15,16 @@ create table if not exists participants (
   device_id text not null unique,
   name text not null,
   distance_m integer not null default 0,
+  avatar text,
+  lat double precision,
+  lng double precision,
   updated_at timestamptz not null default now()
 );
+
+-- Avatar + live position columns (safe to re-run on an existing DB).
+alter table participants add column if not exists avatar text;
+alter table participants add column if not exists lat double precision;
+alter table participants add column if not exists lng double precision;
 
 create table if not exists checkpoint_progress (
   id uuid primary key default gen_random_uuid(),

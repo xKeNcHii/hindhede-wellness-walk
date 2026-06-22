@@ -5,6 +5,7 @@ export interface Identity {
   name: string;
   teamId: string;
   teamName: string;
+  avatar: string;
 }
 
 function uuid(): string {

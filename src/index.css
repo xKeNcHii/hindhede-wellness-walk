@@ -41,17 +41,18 @@ button {
   flex-direction: column;
   align-items: center;
   line-height: 1;
+  transform: scale(var(--cp-scale, 1));
+  transform-origin: bottom center;
+  transition: transform 0.15s ease-out;
 }
 .cp-pin .cp-emoji {
-  font-size: 22px;
-  padding: 3px;
-  border: 3px solid #0b1a12;
-  background: #1f6b3f;
-  box-shadow: inset 0 0 0 2px #2f9c5e;
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
 }
 .cp-pin.cp-off .cp-emoji {
-  background: #0b1a12;
-  opacity: 0.8;
+  opacity: 0.5;
+  filter: grayscale(0.7) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
 }
 .cp-pin .cp-num {
   margin-top: 2px;
@@ -61,11 +62,68 @@ button {
   background: rgba(11, 26, 18, 0.85);
   padding: 0 3px;
 }
+.view-ctrl a {
+  font-size: 16px;
+  line-height: 30px;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  display: block;
+}
+
 .player-pin {
   font-size: 26px;
   line-height: 1;
   filter: drop-shadow(0 0 3px #2f9c5e);
   animation: pop 0.5s ease-out;
+  transform: scale(var(--cp-scale, 1));
+  transform-origin: center;
+  transition: transform 0.15s ease-out;
+}
+
+/* Teammates (other players on the same team) */
+.mate-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  transform: scale(var(--cp-scale, 1));
+  transform-origin: bottom center;
+  transition: transform 0.15s ease-out;
+}
+.mate-pin .mate-emoji {
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+}
+.mate-pin .mate-name {
+  margin-top: 1px;
+  font-family: inherit;
+  font-size: 7px;
+  color: #f4e9d0;
+  background: rgba(11, 26, 18, 0.85);
+  padding: 1px 3px;
+  white-space: nowrap;
+  max-width: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mate-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 11px;
+  color: #0b1a12;
+  background: #f4e9c1;
+  border: 2px solid #2f9c5e;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transform: scale(var(--cp-scale, 1));
+  transform-origin: center;
+  transition: transform 0.15s ease-out;
 }
 
 @keyframes wiggle {

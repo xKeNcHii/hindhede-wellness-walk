@@ -4,6 +4,7 @@ export const SPRITES: Record<string, string> = {
   swing: "🛝",
   water: "🌊",
   flag: "🚩",
+  camera: "📸",
   player: "🧍",
 };
 

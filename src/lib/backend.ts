@@ -15,6 +15,9 @@ export interface ParticipantRow {
   device_id: string;
   name: string;
   distance_m: number;
+  avatar: string | null;
+  lat: number | null;
+  lng: number | null;
   updated_at: string;
 }
 
@@ -83,14 +86,22 @@ export async function findTeamByCode(code: string): Promise<TeamRow | null> {
   return db.teams.find((t) => t.join_code === norm) ?? null;
 }
 
-export async function upsertParticipant(id: Identity, distanceM: number): Promise<void> {
+export async function upsertParticipant(
+  id: Identity,
+  distanceM: number,
+  coord?: { lat: number; lng: number }
+): Promise<void> {
   if (isRemote && supabase) {
     const { error } = await supabase.from("participants").upsert(
       {
         device_id: id.deviceId,
         team_id: id.teamId,
         name: id.name,
+        avatar: id.avatar,
         distance_m: Math.round(distanceM),
+        // Only touch lat/lng when we actually have a fix, so a distance-only
+        // update never wipes a previously reported position.
+        ...(coord ? { lat: coord.lat, lng: coord.lng } : {}),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "device_id" }
@@ -105,7 +116,10 @@ export async function upsertParticipant(id: Identity, distanceM: number): Promis
     team_id: id.teamId,
     device_id: id.deviceId,
     name: id.name,
+    avatar: id.avatar,
     distance_m: Math.round(distanceM),
+    lat: coord ? coord.lat : existing?.lat ?? null,
+    lng: coord ? coord.lng : existing?.lng ?? null,
     updated_at: new Date().toISOString(),
   };
   if (existing) Object.assign(existing, row);

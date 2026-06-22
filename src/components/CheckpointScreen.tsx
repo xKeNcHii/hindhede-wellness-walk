@@ -59,6 +59,14 @@ export function CheckpointScreen({
           </button>
         </div>
 
+        {/* Distance to this checkpoint (always shown) */}
+        <div className="pixel-border bg-forest-900 p-2 flex items-center justify-between text-[8px]">
+          <span className="text-forest-300">📍 DISTANCE AWAY</span>
+          <span className="text-sand">
+            {distanceToIt != null ? formatDistance(distanceToIt) : "Locating…"}
+          </span>
+        </div>
+
         {/* Unlock status */}
         <div
           className={`pixel-border p-2 text-[8px] ${
@@ -138,13 +146,6 @@ export function CheckpointScreen({
             </div>
           )}
         </section>
-
-        {/* Manual override */}
-        {!unlocked && !inRange && (
-          <PixelButton variant="danger" onClick={() => onUnlock(true)}>
-            I'm here but it won't unlock — unlock manually
-          </PixelButton>
-        )}
 
         <PixelButton variant="ghost" onClick={onClose}>
           Back to map

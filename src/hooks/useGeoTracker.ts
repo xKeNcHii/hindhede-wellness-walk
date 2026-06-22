@@ -10,6 +10,10 @@ export function useGeoTracker(enabled: boolean) {
   const setGpsStatus = useGameStore((s) => s.setGpsStatus);
   const addDistance = useGameStore((s) => s.addDistance);
   const watchId = useRef<number | null>(null);
+  // Accuracy-gated reference used ONLY for distance accounting. Kept separate
+  // from the store's lastFix so we can always show the player's position on the
+  // map even when fixes are too coarse to count toward distance.
+  const anchor = useRef<GeoFix | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
@@ -28,14 +32,23 @@ export function useGeoTracker(enabled: boolean) {
           accuracy: pos.coords.accuracy ?? 9999,
           timestamp: pos.timestamp,
         };
-        const prev = useGameStore.getState().lastFix;
-        const d = acceptedDistance(prev, fix, DEFAULT_FILTER);
+
+        // Distance accounting: compare against an accuracy-gated anchor and
+        // only count movement when the new fix is precise enough.
+        const d = acceptedDistance(anchor.current, fix, DEFAULT_FILTER);
         if (d > 0) {
+          anchor.current = fix;
           addDistance(d, fix);
-        } else if (!prev && fix.accuracy <= DEFAULT_FILTER.maxAccuracy) {
-          // Seed the reference fix without adding distance.
-          addDistance(0, fix);
+          return;
         }
+        if (!anchor.current && fix.accuracy <= DEFAULT_FILTER.maxAccuracy) {
+          anchor.current = fix;
+        }
+
+        // Always surface the latest position so the map marker + geofence work,
+        // even if this fix is too coarse to add distance. addDistance(0, …)
+        // updates lastFix without changing the total.
+        addDistance(0, fix);
       },
       (err) => {
         if (err.code === err.PERMISSION_DENIED) setGpsStatus("denied");

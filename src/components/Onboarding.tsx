@@ -8,9 +8,11 @@ import {
 } from "../lib/identity";
 import { createTeam, findTeamByCode } from "../lib/backend";
 import { isRemote } from "../lib/supabase";
+import { AVATARS, DEFAULT_AVATAR } from "../data/avatars";
 
 export function Onboarding({ onDone }: { onDone: (id: Identity) => void }) {
   const [name, setName] = useState("");
+  const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
   const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
   const [teamName, setTeamName] = useState("");
   const [code, setCode] = useState("");
@@ -23,6 +25,7 @@ export function Onboarding({ onDone }: { onDone: (id: Identity) => void }) {
       name: name.trim(),
       teamId,
       teamName: tName,
+      avatar,
     };
     saveIdentity(id);
     onDone(id);
@@ -89,6 +92,27 @@ export function Onboarding({ onDone }: { onDone: (id: Identity) => void }) {
           className="mt-2 w-full pixel-border bg-forest-900 px-3 py-3 text-[10px] text-sand outline-none"
         />
       </label>
+
+      <div className="w-full max-w-xs text-left">
+        <div className="text-[10px] text-sand mb-2">Pick your character</div>
+        <div className="grid grid-cols-5 gap-2">
+          {AVATARS.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              title={a.label}
+              aria-label={a.label}
+              aria-pressed={avatar === a.id}
+              onClick={() => setAvatar(a.id)}
+              className={`pixel-border aspect-square flex items-center justify-center text-[20px] leading-none ${
+                avatar === a.id ? "bg-forest-700" : "bg-forest-900"
+              }`}
+            >
+              {a.emoji}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {mode === "choose" && (
         <div className="flex flex-col gap-3 w-full max-w-xs">

@@ -20,7 +20,7 @@
   {
     "id": "starting-point",
     "order": 2,
-    "name": "Starting Point",
+    "name": "Entrance to Hindhede",
     "sprite": "gate",
     "lat": 1.347671,
     "lng": 103.775919,
@@ -73,7 +73,7 @@
   },
   {
     "id": "pulai-hut",
-    "order": 5,
+    "order": 6,
     "name": "Pulai Hut",
     "sprite": "tree",
     "lat": 1.348941,
@@ -86,12 +86,12 @@
     },
     "activity": {
       "title": "One Good Thing",
-      "body": "Each teammate shares one good thing — at work or in life — from the past week. Keep it light."
+      "body": "On the way back, pause here as a team. Each teammate shares one good thing — at work or in life — from the past week. Keep it light."
     }
   },
   {
     "id": "lookout-point",
-    "order": 6,
+    "order": 5,
     "name": "Lookout Point",
     "sprite": "water",
     "lat": 1.349353,
@@ -105,6 +105,24 @@
     "activity": {
       "title": "The Swing Forfeit",
       "body": "The teammate who has walked the LEAST distance so far takes the swing at Lookout Point — and gets a cheer from the team. Everyone else takes the photo."
+    }
+  },
+  {
+    "id": "visitor-centre",
+    "order": 7,
+    "name": "Visitor Centre (Endpoint)",
+    "sprite": "camera",
+    "lat": 1.3484361090474006,
+    "lng": 103.77667377813911,
+    "radius": 35,
+    "type": "photo",
+    "wellness": {
+      "title": "Arrive & Reflect",
+      "body": "You've completed the loop — take that in. Notice how your body and mind feel now versus when you started. A walk in nature is one of the simplest, most reliable ways to reset. Carry a little of this calm back with you."
+    },
+    "activity": {
+      "title": "Final Group Photo",
+      "body": "Gather the whole team for a group photo to mark the end of the walk. Snap it and upload it below — smiles mandatory."
     }
   }
 ]

@@ -18,7 +18,7 @@ export function PixelAvatar({ state, width, className, ...opts }: Props) {
   );
   return (
     <div
-      className={className}
+      className={`pixel-avatar${className ? ` ${className}` : ""}`}
       style={width ? { width, lineHeight: 0 } : { lineHeight: 0 }}
       // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: svg }}

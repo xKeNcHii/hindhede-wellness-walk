@@ -66,7 +66,7 @@ export function CheckpointScreen({
   };
 
   return (
-    <div className="fixed inset-0 z-[1200] bg-forest-950/95 overflow-y-auto">
+    <div className="fixed inset-0 z-[1200] bg-forest-950 overflow-y-auto">
       <div className="max-w-md mx-auto p-5 flex flex-col gap-4 min-h-full">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

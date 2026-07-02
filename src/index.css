@@ -143,6 +143,14 @@ button {
   animation: pop 0.5s ease-out;
 }
 
+/* PixelAvatar wrapper: constrain the intrinsic SVG to the wrapper's width so a
+   48x64 sprite doesn't overflow small containers (e.g. the header). */
+.pixel-avatar > svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* Evolving pixel-avatar pins (SVG replaces the old emoji markers). */
 .player-pin svg {
   width: 26px;

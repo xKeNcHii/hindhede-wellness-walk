@@ -5,6 +5,9 @@ export const SPRITES: Record<string, string> = {
   water: "🌊",
   flag: "🚩",
   camera: "📸",
+  rock: "🪨",
+  wetland: "🦆",
+  colugo: "🦥",
   player: "🧍",
 };
 

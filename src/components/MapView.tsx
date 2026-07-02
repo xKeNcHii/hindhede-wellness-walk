@@ -71,6 +71,31 @@ function checkpointIcon(emoji: string, order: number, unlocked: boolean) {
   });
 }
 
+// A main-park checkpoint whose icon is still masked (Entrance not reached yet).
+// Uses a plain "?" glyph (not an emoji) so it renders identically everywhere.
+function maskedIcon(order: number) {
+  return L.divIcon({
+    className: "cp-marker",
+    html: `<div class="cp-pin cp-off cp-masked">
+        <span class="cp-qmark">?</span>
+        <span class="cp-num">${order}</span>
+      </div>`,
+    iconSize: [40, 50],
+    iconAnchor: [20, 46],
+  });
+}
+
+// The hidden bonus checkpoint (Colugo Deck): a mysterious dungeon gate showing
+// only a glowing "?". CSS-drawn (no emoji) so it can't break to a tofu box.
+function secretIcon() {
+  return L.divIcon({
+    className: "cp-marker",
+    html: `<div class="cp-pin cp-secret"><span class="cp-gate">?</span></div>`,
+    iconSize: [40, 50],
+    iconAnchor: [20, 46],
+  });
+}
+
 function playerIcon(avatarSvg: string) {
   return L.divIcon({
     className: "cp-marker",
@@ -485,14 +510,28 @@ export function MapView({ unlockedIds, onOpenCheckpoint, walkers }: Props) {
             />
           )}
 
-          {CHECKPOINTS.map((c) => (
-            <Marker
-              key={c.id}
-              position={[c.lat, c.lng]}
-              icon={checkpointIcon(SPRITES[c.sprite] ?? "❓", c.order, unlockedIds.has(c.id))}
-              eventHandlers={{ click: () => onOpenCheckpoint(c) }}
-            />
-          ))}
+          {CHECKPOINTS.map((c) => {
+            const unlocked = unlockedIds.has(c.id);
+            const revealed = !c.revealAfter || unlockedIds.has(c.revealAfter);
+            // Secret stays a dungeon gate until reached; masked main-park stops
+            // stay "?" until the Entrance is unlocked. Both block early taps.
+            const icon =
+              c.secret && !unlocked
+                ? secretIcon()
+                : !revealed
+                ? maskedIcon(c.order)
+                : checkpointIcon(SPRITES[c.sprite] ?? "❓", c.order, unlocked);
+            const clickable = unlocked || (revealed && !c.secret);
+            return (
+              <Marker
+                key={c.id}
+                position={[c.lat, c.lng]}
+                icon={icon}
+                interactive={clickable}
+                eventHandlers={clickable ? { click: () => onOpenCheckpoint(c) } : {}}
+              />
+            );
+          })}
 
           <TeammatesLayer mates={mates} />
 
@@ -522,7 +561,15 @@ export function MapView({ unlockedIds, onOpenCheckpoint, walkers }: Props) {
             </span>
           </div>
           <div className="text-sand text-[10px] flex items-center gap-2">
-            <Sprite name={next.c.sprite} size={16} /> {next.c.name}
+            {next.c.secret ? (
+              <>??? — a hidden place</>
+            ) : next.c.revealAfter && !unlockedIds.has(next.c.revealAfter) ? (
+              <>??? — reach the Entrance to reveal</>
+            ) : (
+              <>
+                <Sprite name={next.c.sprite} size={16} /> {next.c.name}
+              </>
+            )}
           </div>
           {next.dist != null && next.dist <= MANUAL_RANGE_M && (
             <PixelButton

@@ -25,7 +25,7 @@ export function YouView({ unlockedIds }: Props) {
       <div className="pixel-border bg-forest-900 p-4 flex flex-col items-center gap-2">
         <PixelAvatar state={avatar} scale={3} width={avatar.background ? 200 : 140} />
         {avatar.background === "durian_dodger" && (
-          <div className="text-[7px] text-clay">🏵️ Durian Dodger — quarry lookout reached</div>
+          <div className="text-[7px] text-clay">🏵️ Durian Dodger — secret Colugo Deck reached</div>
         )}
       </div>
 

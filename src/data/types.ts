@@ -13,6 +13,13 @@ export interface Checkpoint {
   /** Hand-placed pin position on park-map.png, as 0..1 fractions. */
   img?: { x: number; y: number };
   type: CheckpointType;
+  /** A hidden bonus checkpoint: shown as a mysterious "dungeon gate" on the
+   * map until the walker physically reaches it (no number, no reflection). */
+  secret?: boolean;
+  /** This checkpoint's icon stays masked ("?") until the given checkpoint id is
+   * unlocked, then it reveals. Used to keep the main-park stops secret until the
+   * walker reaches the Entrance. */
+  revealAfter?: string;
   wellness: { title: string; body: string };
   activity: { title: string; body: string };
 }

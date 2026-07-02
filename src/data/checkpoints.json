@@ -18,8 +18,63 @@
     }
   },
   {
-    "id": "starting-point",
+    "id": "rock-sorter",
     "order": 2,
+    "name": "Rock Sorter",
+    "sprite": "rock",
+    "lat": 1.343938,
+    "lng": 103.781343,
+    "radius": 35,
+    "type": "standard",
+    "wellness": {
+      "title": "One Rock at a Time",
+      "body": "This old quarry was cleared stone by stone. When everything feels like too much, it helps to do the same — pick one small thing and begin. Breathe, feel your feet on the ground, and let the pile shrink one rock at a time."
+    },
+    "activity": {
+      "title": "Name the Boulder",
+      "body": "As a team, each person names one 'big rock' on their mind this week, then one small first step toward it. Say it out loud — a shared load is lighter."
+    }
+  },
+  {
+    "id": "quarry-wetlands",
+    "order": 3,
+    "name": "Quarry Wetlands",
+    "sprite": "wetland",
+    "lat": 1.344454,
+    "lng": 103.781689,
+    "radius": 35,
+    "type": "standard",
+    "wellness": {
+      "title": "Still Water",
+      "body": "The quarry filled slowly into this quiet wetland — calm can grow from something once noisy and hard. Pause at the water's edge, soften your gaze, and let your breathing slow to match the stillness."
+    },
+    "activity": {
+      "title": "Spot the Life",
+      "body": "Stand quietly for a minute and watch the water. As a team, count how many living things you can find — birds, fish, dragonflies. Nature rewards patience."
+    }
+  },
+  {
+    "id": "colugo-deck",
+    "order": 4,
+    "name": "Colugo Deck",
+    "sprite": "colugo",
+    "lat": 1.344835,
+    "lng": 103.782091,
+    "radius": 30,
+    "type": "standard",
+    "secret": true,
+    "wellness": {
+      "title": "The Hidden Deck",
+      "body": "You found it. Colugos glide between these trees at dusk, and durians drop without warning below. Reaching this secret earns you the Durian Dodger title. You left the obvious path and found something worth it — take the view in."
+    },
+    "activity": {
+      "title": "Glide Like a Colugo",
+      "body": "A colugo travels by letting go and trusting the glide. Name one thing you've been gripping too tightly at work — then, just for this moment, let it go and enjoy the view."
+    }
+  },
+  {
+    "id": "starting-point",
+    "order": 5,
     "name": "Entrance to Hindhede",
     "sprite": "gate",
     "lat": 1.347671,
@@ -28,7 +83,7 @@
     "type": "standard",
     "wellness": {
       "title": "Begin with Awareness",
-      "body": "This is where the walk really starts. As you step onto the trail, notice the change underfoot and the shade of the trees. Drop your shoulders, unclench your jaw, and let your pace slow to match the forest."
+      "body": "This is where the main trail starts. As you step onto the path, notice the change underfoot and the shade of the trees. Drop your shoulders, unclench your jaw, and let your pace slow to match the forest. The rest of the checkpoints reveal themselves from here."
     },
     "activity": {
       "title": "First Steps Together",
@@ -36,68 +91,34 @@
     }
   },
   {
-    "id": "gaharu-hut",
-    "order": 3,
-    "name": "Gaharu Hut",
-    "sprite": "tree",
-    "lat": 1.348412,
-    "lng": 103.776056,
-    "radius": 35,
-    "type": "standard",
-    "wellness": {
-      "title": "Grounding (5-4-3-2-1)",
-      "body": "Pause under the shelter. Name 5 things you can see, 4 you can hear, 3 you can feel, 2 you can smell, 1 you can taste. This simple exercise pulls a busy mind back into the present."
-    },
-    "activity": {
-      "title": "Sound Map",
-      "body": "Stand silently for 60 seconds. Afterward, each teammate names the one sound they noticed that no one else mentioned."
-    }
-  },
-  {
     "id": "waringin-hut",
-    "order": 4,
+    "order": 6,
     "name": "Waringin Hut & Playground",
     "sprite": "swing",
     "lat": 1.348597,
     "lng": 103.775616,
     "radius": 35,
-    "type": "standard",
+    "type": "swing",
+    "revealAfter": "starting-point",
     "wellness": {
       "title": "Play is Good for You",
       "body": "Play lowers cortisol and boosts mood. You're allowed to be a kid for a minute. There's a playground right here — use it."
     },
     "activity": {
-      "title": "Playground Pause",
-      "body": "Spend 2 minutes on the playground as a team. Laughter is mandatory. Take a silly group action shot."
-    }
-  },
-  {
-    "id": "pulai-hut",
-    "order": 6,
-    "name": "Pulai Hut",
-    "sprite": "tree",
-    "lat": 1.348941,
-    "lng": 103.775966,
-    "radius": 35,
-    "type": "standard",
-    "wellness": {
-      "title": "Three Good Things",
-      "body": "Gratitude is one of the most reliable mood-boosters there is. Bring to mind three things that went well recently — they can be tiny."
-    },
-    "activity": {
-      "title": "One Good Thing",
-      "body": "On the way back, pause here as a team. Each teammate shares one good thing — at work or in life — from the past week. Keep it light."
+      "title": "The Swing Forfeit",
+      "body": "The teammate who has walked the LEAST distance so far takes the swing — and gets a cheer from the team. Everyone else takes the photo."
     }
   },
   {
     "id": "lookout-point",
-    "order": 5,
+    "order": 7,
     "name": "Lookout Point",
     "sprite": "water",
     "lat": 1.349353,
     "lng": 103.774947,
     "radius": 30,
     "type": "swing",
+    "revealAfter": "starting-point",
     "wellness": {
       "title": "Widen Your View",
       "body": "Gazing at a wide, distant scene like the quarry relaxes the eyes and the nervous system. Soften your focus and take in the whole view for a moment."
@@ -109,13 +130,14 @@
   },
   {
     "id": "visitor-centre",
-    "order": 7,
+    "order": 8,
     "name": "Visitor Centre (Endpoint)",
     "sprite": "camera",
     "lat": 1.3484361090474006,
     "lng": 103.77667377813911,
     "radius": 35,
     "type": "photo",
+    "revealAfter": "starting-point",
     "wellness": {
       "title": "Arrive & Reflect",
       "body": "You've completed the loop — take that in. Notice how your body and mind feel now versus when you started. A walk in nature is one of the simplest, most reliable ways to reset. Carry a little of this calm back with you."

@@ -106,8 +106,9 @@ export function CheckpointScreen({
           <div className="pixel-border bg-forest-700 p-3 text-center">
             <div className="text-[9px] text-clay">🏵️ DURIAN DODGER</div>
             <p className="text-[7px] text-sand mt-1 leading-relaxed">
-              You braved the falling durians to reach the quarry lookout — your
-              avatar now stands on the deck, title and all. Check the You tab.
+              You strayed off the trail and braved the falling durians to find
+              the hidden Colugo Deck — your avatar now stands on the deck, title
+              and all. Check the You tab.
             </p>
           </div>
         )}

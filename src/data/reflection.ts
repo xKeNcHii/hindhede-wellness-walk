@@ -21,9 +21,9 @@ export interface ReflectionQuestion {
   options: ReflectionOption[];
 }
 
-/** The hidden-reward checkpoint: reaching the quarry lookout (durian country)
- * earns the "Durian Dodger" avatar background. */
-export const DURIAN_CHECKPOINT_ID = "lookout-point";
+/** The hidden-reward checkpoint: reaching the secret Colugo Deck (durian
+ * country) earns the "Durian Dodger" avatar background. */
+export const DURIAN_CHECKPOINT_ID = "colugo-deck";
 
 export const QUESTIONS: ReflectionQuestion[] = [
   {
@@ -114,13 +114,16 @@ export const QUESTIONS: ReflectionQuestion[] = [
 
 /**
  * Deterministic checkpoint → question mapping.
- * The first checkpoint (gathering point) has no question; the rest walk
- * through the six dimensions in order, looping if there are more checkpoints.
+ * The gathering point (order 1) and secret checkpoints get no question; the
+ * remaining checkpoints walk through the six dimensions in order, looping if
+ * there are ever more than six.
  */
-const ordered = [...CHECKPOINTS].sort((a, b) => a.order - b.order);
+const questionable = [...CHECKPOINTS]
+  .sort((a, b) => a.order - b.order)
+  .filter((c) => c.order > 1 && !c.secret);
 
 export function questionForCheckpoint(checkpointId: string): ReflectionQuestion | null {
-  const idx = ordered.findIndex((c) => c.id === checkpointId);
-  if (idx <= 0) return null; // gathering point: welcome only
-  return QUESTIONS[(idx - 1) % QUESTIONS.length];
+  const idx = questionable.findIndex((c) => c.id === checkpointId);
+  if (idx < 0) return null; // gathering point or secret: no reflection
+  return QUESTIONS[idx % QUESTIONS.length];
 }

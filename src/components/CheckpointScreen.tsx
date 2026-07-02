@@ -5,12 +5,15 @@ import { Sprite } from "./Sprite";
 import { ParticipantRow, uploadPhoto } from "../lib/backend";
 import { Identity } from "../lib/identity";
 import { formatDistance } from "../lib/geo";
+import { questionForCheckpoint, DURIAN_CHECKPOINT_ID } from "../data/reflection";
+import { useGameStore } from "../store/useGameStore";
+import { PixelAvatar } from "./PixelAvatar";
 
 interface Props {
   checkpoint: Checkpoint;
   unlocked: boolean;
   distanceToIt: number | null;
-  teammates: ParticipantRow[];
+  walkers: ParticipantRow[];
   identity: Identity;
   onUnlock: (viaManual: boolean) => void;
   onClose: () => void;
@@ -20,30 +23,46 @@ export function CheckpointScreen({
   checkpoint,
   unlocked,
   distanceToIt,
-  teammates,
+  walkers,
   identity,
   onUnlock,
   onClose,
 }: Props) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [tip, setTip] = useState<string | null>(null);
+
+  const avatar = useGameStore((s) => s.avatar);
+  const answered = useGameStore((s) => s.answered);
+  const answerReflection = useGameStore((s) => s.answerReflection);
 
   const inRange = distanceToIt != null && distanceToIt <= checkpoint.radius;
+  const question = questionForCheckpoint(checkpoint.id);
+  const alreadyAnswered = Boolean(answered[checkpoint.id]);
 
+  // Fun fairness rule kept from the original: whoever has walked the least
+  // takes the swing (now across all walkers, not a team).
   const lowest =
-    checkpoint.type === "swing" && teammates.length > 0
-      ? [...teammates].sort((a, b) => a.distance_m - b.distance_m)[0]
+    checkpoint.type === "swing" && walkers.length > 0
+      ? [...walkers].sort((a, b) => a.distance_m - b.distance_m)[0]
       : null;
 
   const handlePhoto = async (file: File) => {
     setUploading(true);
     try {
-      const url = await uploadPhoto(identity.teamId, checkpoint.id, file);
+      const url = await uploadPhoto(identity.deviceId, checkpoint.id, file);
       setPhotoUrl(url.startsWith("blob:") || url.startsWith("http") ? url : null);
       if (!unlocked) onUnlock(false);
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleAnswer = (optIdx: number) => {
+    if (!question || alreadyAnswered) return;
+    const opt = question.options[optIdx];
+    answerReflection(checkpoint.id, question.id, question.dim, opt.delta);
+    setTip(opt.delta < 0 && opt.tip ? opt.tip : null);
   };
 
   return (
@@ -74,13 +93,24 @@ export function CheckpointScreen({
           }`}
         >
           {unlocked
-            ? "✓ Checkpoint unlocked for your team"
+            ? "✓ Checkpoint reached"
             : inRange
             ? "You're in range — unlocking…"
             : distanceToIt != null
             ? `${formatDistance(distanceToIt)} away`
             : "Locating…"}
         </div>
+
+        {/* Durian Dodger reward banner */}
+        {checkpoint.id === DURIAN_CHECKPOINT_ID && unlocked && (
+          <div className="pixel-border bg-forest-700 p-3 text-center">
+            <div className="text-[9px] text-clay">🏵️ DURIAN DODGER</div>
+            <p className="text-[7px] text-sand mt-1 leading-relaxed">
+              You braved the falling durians to reach the quarry lookout — your
+              avatar now stands on the deck, title and all. Check the You tab.
+            </p>
+          </div>
+        )}
 
         {/* Wellness */}
         <section className="pixel-border bg-forest-900 p-4">
@@ -91,6 +121,50 @@ export function CheckpointScreen({
             {checkpoint.wellness.body}
           </p>
         </section>
+
+        {/* Point of reflection — evolves the avatar (once per checkpoint) */}
+        {question && unlocked && (
+          <section className="pixel-border bg-forest-800 p-4">
+            <h3 className="text-[10px] text-forest-300 mb-2">💭 Point of Reflection</h3>
+            {!alreadyAnswered ? (
+              <>
+                <p className="text-[9px] leading-relaxed text-sand mb-3">
+                  {question.prompt}
+                </p>
+                <div className="flex flex-col gap-2">
+                  {question.options.map((o, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleAnswer(i)}
+                      className="pixel-border bg-forest-900 text-sand text-[8px] text-left px-3 py-3 leading-relaxed"
+                    >
+                      {o.text}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[7px] text-forest-300 mt-2 leading-relaxed">
+                  Answer honestly — your avatar changes with it, and a struggle
+                  sticks for the rest of the walk.
+                </p>
+              </>
+            ) : (
+              <div className="flex items-center gap-3">
+                {avatar && (
+                  <PixelAvatar state={avatar} scale={1} title={false} background={null} width={40} />
+                )}
+                <p className="text-[8px] text-sand leading-relaxed">
+                  Reflection done here — your avatar carries the answer.
+                </p>
+              </div>
+            )}
+            {tip && (
+              <div className="mt-3 pixel-border bg-forest-950 p-3">
+                <div className="text-[8px] text-clay mb-1">💡 TIP</div>
+                <p className="text-[8px] text-sand leading-relaxed">{tip}</p>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Activity */}
         <section className="pixel-border bg-forest-800 p-4">
@@ -115,7 +189,7 @@ export function CheckpointScreen({
                 </>
               ) : (
                 <div className="text-[8px] text-forest-300">
-                  Waiting for teammates' distances…
+                  Waiting for walkers' distances…
                 </div>
               )}
             </div>

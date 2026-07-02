@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Onboarding } from "./components/Onboarding";
 import { MapView } from "./components/MapView";
-import { Collection } from "./components/Collection";
+import { YouView } from "./components/YouView";
 import { Leaderboard } from "./components/Leaderboard";
 import { AdminView } from "./components/AdminView";
 import { CheckpointScreen } from "./components/CheckpointScreen";
-import { HatchModal } from "./components/HatchModal";
+import { PixelAvatar } from "./components/PixelAvatar";
 import { useGameStore } from "./store/useGameStore";
 import { useGeoTracker } from "./hooks/useGeoTracker";
 import { useWakeLock } from "./hooks/useWakeLock";
@@ -13,10 +13,11 @@ import { useSnapshot } from "./hooks/useSnapshot";
 import { loadIdentity, clearIdentity, Identity } from "./lib/identity";
 import { upsertParticipant } from "./lib/backend";
 import { CHECKPOINTS, Checkpoint } from "./data/types";
-import { haversine } from "./lib/geo";
-import { avatarEmoji } from "./data/avatars";
+import { DURIAN_CHECKPOINT_ID } from "./data/reflection";
+import { haversine, formatDistance } from "./lib/geo";
+import { encodeAvatar } from "./lib/avatar";
 
-type Tab = "map" | "eggs" | "leaderboard" | "admin";
+type Tab = "map" | "you" | "walkers" | "admin";
 
 const ADMIN_ENABLED =
   typeof window !== "undefined" &&
@@ -30,7 +31,10 @@ const GEOFENCE_MAX_ACCURACY_M = 50;
 export default function App() {
   const identity = useGameStore((s) => s.identity);
   const setIdentity = useGameStore((s) => s.setIdentity);
+  const avatar = useGameStore((s) => s.avatar);
+  const distance = useGameStore((s) => s.distance);
   const unlock = useGameStore((s) => s.unlock);
+  const earnBackground = useGameStore((s) => s.earnBackground);
   const lastFix = useGameStore((s) => s.lastFix);
 
   const [tab, setTab] = useState<Tab>("map");
@@ -45,37 +49,35 @@ export default function App() {
 
   // Register this walker (even at 0m) so they appear on the leaderboard.
   useEffect(() => {
-    if (identity) void upsertParticipant(identity, useGameStore.getState().distance);
+    if (identity) {
+      const s = useGameStore.getState();
+      if (s.avatar) void upsertParticipant(identity, s.distance, encodeAvatar(s.avatar));
+    }
   }, [identity]);
 
   useGeoTracker(Boolean(identity));
   useWakeLock(Boolean(identity));
   const snapshot = useSnapshot();
 
+  // My unlocked checkpoints (solo mode: keyed by this device).
   const unlockedIds = useMemo(() => {
     if (!identity) return new Set<string>();
     return new Set(
       snapshot.checkpoints
-        .filter((c) => c.team_id === identity.teamId)
+        .filter((c) => c.device_id === identity.deviceId)
         .map((c) => c.checkpoint_id)
     );
   }, [snapshot.checkpoints, identity]);
 
-  const teammates = useMemo(() => {
-    if (!identity) return [];
-    return snapshot.participants.filter((p) => p.team_id === identity.teamId);
-  }, [snapshot.participants, identity]);
-
-  // Teammates to plot on the map: same team, not me, and with a known position.
-  const mapMates = useMemo(
+  // Everyone else with a known position, for the map.
+  const otherWalkers = useMemo(
     () =>
       identity
-        ? teammates.filter(
-            (p) =>
-              p.device_id !== identity.deviceId && p.lat != null && p.lng != null
+        ? snapshot.participants.filter(
+            (p) => p.device_id !== identity.deviceId && p.lat != null && p.lng != null
           )
         : [],
-    [teammates, identity]
+    [snapshot.participants, identity]
   );
 
   // Geofence: auto-unlock + auto-open checkpoints when within radius.
@@ -89,13 +91,14 @@ export default function App() {
       const dist = haversine(lastFix.coord, { lat: c.lat, lng: c.lng });
       if (dist <= c.radius) {
         if (!unlockedIds.has(c.id)) unlock(c.id, false);
+        if (c.id === DURIAN_CHECKPOINT_ID) earnBackground("durian_dodger");
         if (!autoOpened.current.has(c.id) && !active) {
           autoOpened.current.add(c.id);
           setActive(c);
         }
       }
     }
-  }, [lastFix, identity, unlockedIds, unlock, active]);
+  }, [lastFix, identity, unlockedIds, unlock, earnBackground, active]);
 
   if (!identity) {
     return <Onboarding onDone={(id: Identity) => setIdentity(id)} />;
@@ -111,24 +114,27 @@ export default function App() {
       {/* Header */}
       <header className="flex items-center justify-between p-3 border-b-4 border-forest-950 bg-forest-900">
         <div className="flex items-center gap-2">
-          <span className="text-[20px] leading-none" aria-hidden>
-            {avatarEmoji(identity.avatar)}
-          </span>
+          {avatar && (
+            <button onClick={() => setTab("you")} aria-label="Your avatar">
+              <PixelAvatar state={avatar} scale={1} title={false} background={null} width={22} />
+            </button>
+          )}
           <div className="text-[9px]">
-            <div className="text-forest-300">{identity.teamName}</div>
-            <div className="text-sand text-[8px]">{identity.name}</div>
+            <div className="text-sand">{identity.name}</div>
+            <div className="text-forest-300 text-[7px]">{formatDistance(distance)} walked</div>
           </div>
         </div>
         <button
           className="text-[7px] text-forest-300 underline"
           onClick={() => {
-            if (confirm("Leave team and reset this device?")) {
+            if (confirm("Reset this device and start over?")) {
               clearIdentity();
+              useGameStore.getState().resetProgress();
               setIdentity(null);
             }
           }}
         >
-          leave
+          reset
         </button>
       </header>
 
@@ -138,25 +144,23 @@ export default function App() {
           <MapView
             unlockedIds={unlockedIds}
             onOpenCheckpoint={setActive}
-            teammates={mapMates}
+            walkers={otherWalkers}
           />
         )}
-        {tab === "eggs" && <Collection />}
-        {tab === "leaderboard" && (
-          <Leaderboard snapshot={snapshot} identity={identity} />
-        )}
+        {tab === "you" && <YouView unlockedIds={unlockedIds} />}
+        {tab === "walkers" && <Leaderboard snapshot={snapshot} identity={identity} />}
         {tab === "admin" && <AdminView snapshot={snapshot} />}
       </main>
 
       {/* Bottom nav */}
       <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md grid grid-cols-4 border-t-4 border-forest-950 bg-forest-900">
         <NavBtn label="Map" icon="🗺️" on={tab === "map"} go={() => setTab("map")} />
-        <NavBtn label="Eggs" icon="🥚" on={tab === "eggs"} go={() => setTab("eggs")} />
+        <NavBtn label="You" icon="🚶" on={tab === "you"} go={() => setTab("you")} />
         <NavBtn
-          label="Teams"
+          label="Walkers"
           icon="🏆"
-          on={tab === "leaderboard"}
-          go={() => setTab("leaderboard")}
+          on={tab === "walkers"}
+          go={() => setTab("walkers")}
         />
         {ADMIN_ENABLED ? (
           <NavBtn label="Admin" icon="🛠️" on={tab === "admin"} go={() => setTab("admin")} />
@@ -170,14 +174,15 @@ export default function App() {
           checkpoint={active}
           unlocked={unlockedIds.has(active.id)}
           distanceToIt={distanceToActive}
-          teammates={teammates}
+          walkers={snapshot.participants}
           identity={identity}
-          onUnlock={(viaManual) => unlock(active.id, viaManual)}
+          onUnlock={(viaManual) => {
+            unlock(active.id, viaManual);
+            if (active.id === DURIAN_CHECKPOINT_ID) earnBackground("durian_dodger");
+          }}
           onClose={() => setActive(null)}
         />
       )}
-
-      <HatchModal />
     </div>
   );
 }

@@ -1,11 +1,11 @@
-const KEY = "hww.identity.v1";
+const KEY = "hww.identity.v2";
 
 export interface Identity {
   deviceId: string;
+  /** Unique walker name (checked against other participants at onboarding). */
   name: string;
-  teamId: string;
-  teamName: string;
-  avatar: string;
+  /** Which of the 52 pixel bases this walker picked, e.g. "base_014". */
+  baseId: string;
 }
 
 function uuid(): string {
@@ -16,7 +16,11 @@ function uuid(): string {
 export function loadIdentity(): Identity | null {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Identity) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Identity;
+    // v1 identities (team era) lack baseId — treat as not onboarded.
+    if (!parsed.baseId) return null;
+    return parsed;
   } catch {
     return null;
   }
@@ -32,11 +36,4 @@ export function clearIdentity(): void {
 
 export function newDeviceId(): string {
   return uuid();
-}
-
-/** Short, human-friendly team join code, e.g. "FOX-274". */
-export function makeJoinCode(name: string): string {
-  const slug = name.replace(/[^a-zA-Z]/g, "").slice(0, 3).toUpperCase() || "TEAM";
-  const num = Math.floor(100 + Math.random() * 900);
-  return `${slug}-${num}`;
 }

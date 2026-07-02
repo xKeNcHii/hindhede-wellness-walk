@@ -1,78 +1,58 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PixelButton } from "./PixelButton";
-import {
-  Identity,
-  makeJoinCode,
-  newDeviceId,
-  saveIdentity,
-} from "../lib/identity";
-import { createTeam, findTeamByCode } from "../lib/backend";
+import { Identity, newDeviceId, saveIdentity } from "../lib/identity";
+import { isNameTaken } from "../lib/backend";
 import { isRemote } from "../lib/supabase";
-import { AVATARS, DEFAULT_AVATAR } from "../data/avatars";
+import { BASE_IDS, baseName, newAvatarState } from "../lib/avatar";
+import { PixelAvatar } from "./PixelAvatar";
 
 export function Onboarding({ onDone }: { onDone: (id: Identity) => void }) {
   const [name, setName] = useState("");
-  const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
-  const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
-  const [teamName, setTeamName] = useState("");
-  const [code, setCode] = useState("");
+  const [baseId, setBaseId] = useState<string>(BASE_IDS[13] ?? BASE_IDS[0]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const finish = (teamId: string, tName: string) => {
-    const id: Identity = {
-      deviceId: newDeviceId(),
-      name: name.trim(),
-      teamId,
-      teamName: tName,
-      avatar,
-    };
-    saveIdentity(id);
-    onDone(id);
-  };
+  // Neutral preview states, one per base (memoised — 52 of them).
+  const previews = useMemo(
+    () => Object.fromEntries(BASE_IDS.map((b) => [b, newAvatarState(b)])),
+    []
+  );
 
-  const handleCreate = async () => {
-    if (!teamName.trim()) return setError("Give your team a name.");
+  const handleStart = async () => {
+    const trimmed = name.trim();
+    if (!trimmed) return setError("Tell us your name first.");
     setBusy(true);
     setError(null);
+    const deviceId = newDeviceId();
     try {
-      const joinCode = makeJoinCode(teamName);
-      const team = await createTeam(teamName.trim(), joinCode);
-      finish(team.id, team.name);
-    } catch (e) {
-      setError("Could not create team. " + (e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleJoin = async () => {
-    if (!code.trim()) return setError("Enter a join code.");
-    setBusy(true);
-    setError(null);
-    try {
-      const team = await findTeamByCode(code);
-      if (!team) {
-        setError("No team with that code.");
+      if (await isNameTaken(trimmed, deviceId)) {
+        setError(`\u201c${trimmed}\u201d is taken — pick something unique.`);
         return;
       }
-      finish(team.id, team.name);
+      const id: Identity = { deviceId, name: trimmed, baseId };
+      saveIdentity(id);
+      onDone(id);
     } catch (e) {
-      setError("Could not join. " + (e as Error).message);
+      setError("Could not check the name. " + (e as Error).message);
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center p-6 gap-6 text-center">
-      <div>
+    <div className="min-h-full flex flex-col items-center p-6 gap-6 text-center max-w-md mx-auto">
+      <div className="mt-4">
         <div className="text-2xl mb-2">🌿</div>
         <h1 className="text-sm leading-relaxed text-forest-300">
           Hindhede
           <br />
           Wellness Walk
         </h1>
+        <p className="mt-3 text-[8px] text-forest-300 leading-relaxed">
+          Your character starts neutral and evolves
+          <br />
+          with how you answer along the trail.
+        </p>
         {!isRemote && (
           <p className="mt-3 text-[8px] text-clay leading-relaxed">
             local mode — set Supabase keys
@@ -83,7 +63,7 @@ export function Onboarding({ onDone }: { onDone: (id: Identity) => void }) {
       </div>
 
       <label className="w-full max-w-xs text-left text-[10px] text-sand">
-        Your name
+        Your name (must be unique)
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -93,88 +73,34 @@ export function Onboarding({ onDone }: { onDone: (id: Identity) => void }) {
         />
       </label>
 
-      <div className="w-full max-w-xs text-left">
-        <div className="text-[10px] text-sand mb-2">Pick your character</div>
-        <div className="grid grid-cols-5 gap-2">
-          {AVATARS.map((a) => (
+      <div className="w-full text-left">
+        <div className="text-[10px] text-sand mb-1">Pick your walker</div>
+        <div className="text-[7px] text-forest-300 mb-2">{baseName(baseId)}</div>
+        <div className="grid grid-cols-5 gap-2 max-h-[38vh] overflow-y-auto pr-1">
+          {BASE_IDS.map((b) => (
             <button
-              key={a.id}
+              key={b}
               type="button"
-              title={a.label}
-              aria-label={a.label}
-              aria-pressed={avatar === a.id}
-              onClick={() => setAvatar(a.id)}
-              className={`pixel-border aspect-square flex items-center justify-center text-[20px] leading-none ${
-                avatar === a.id ? "bg-forest-700" : "bg-forest-900"
+              title={baseName(b)}
+              aria-label={baseName(b)}
+              aria-pressed={baseId === b}
+              onClick={() => setBaseId(b)}
+              className={`pixel-border flex items-center justify-center p-1 ${
+                baseId === b ? "bg-forest-700" : "bg-forest-900"
               }`}
             >
-              {a.emoji}
+              <PixelAvatar state={previews[b]} scale={1} width={36} />
             </button>
           ))}
         </div>
       </div>
 
-      {mode === "choose" && (
-        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <PixelButton
-            disabled={!name.trim()}
-            onClick={() => {
-              setError(null);
-              setMode("create");
-            }}
-          >
-            Create a Team
-          </PixelButton>
-          <PixelButton
-            variant="ghost"
-            disabled={!name.trim()}
-            onClick={() => {
-              setError(null);
-              setMode("join");
-            }}
-          >
-            Join a Team
-          </PixelButton>
-        </div>
-      )}
-
-      {mode === "create" && (
-        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <input
-            value={teamName}
-            onChange={(e) => setTeamName(e.target.value)}
-            maxLength={24}
-            placeholder="Team name"
-            className="w-full pixel-border bg-forest-900 px-3 py-3 text-[10px] text-sand outline-none"
-          />
-          <PixelButton disabled={busy} onClick={handleCreate}>
-            {busy ? "Creating…" : "Create"}
-          </PixelButton>
-          <PixelButton variant="ghost" onClick={() => setMode("choose")}>
-            Back
-          </PixelButton>
-        </div>
-      )}
-
-      {mode === "join" && (
-        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <input
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            maxLength={8}
-            placeholder="Join code e.g. FOX-274"
-            className="w-full pixel-border bg-forest-900 px-3 py-3 text-[10px] text-sand outline-none"
-          />
-          <PixelButton disabled={busy} onClick={handleJoin}>
-            {busy ? "Joining…" : "Join"}
-          </PixelButton>
-          <PixelButton variant="ghost" onClick={() => setMode("choose")}>
-            Back
-          </PixelButton>
-        </div>
-      )}
-
-      {error && <p className="text-[9px] text-clay max-w-xs">{error}</p>}
+      <div className="w-full max-w-xs flex flex-col gap-3 pb-8">
+        <PixelButton disabled={busy || !name.trim()} onClick={handleStart}>
+          {busy ? "Checking name…" : "Start walking"}
+        </PixelButton>
+        {error && <p className="text-[9px] text-clay">{error}</p>}
+      </div>
     </div>
   );
 }

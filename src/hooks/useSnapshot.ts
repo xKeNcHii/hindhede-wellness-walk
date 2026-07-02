@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { fetchSnapshot, subscribe, Snapshot } from "../lib/backend";
 
-const EMPTY: Snapshot = { teams: [], participants: [], checkpoints: [] };
+const EMPTY: Snapshot = { participants: [], checkpoints: [] };
 
-/** Live snapshot of all teams/participants/checkpoints (realtime or local). */
+/** Live snapshot of all walkers/checkpoints (realtime or local). */
 export function useSnapshot(): Snapshot {
   const [snap, setSnap] = useState<Snapshot>(EMPTY);
 

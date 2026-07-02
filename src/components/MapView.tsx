@@ -11,14 +11,14 @@ import { ROUTE } from "../data/route";
 import { haversine, formatDistance } from "../lib/geo";
 import { Sprite, SPRITES } from "./Sprite";
 import { PixelButton } from "./PixelButton";
-import { METRES_PER_EGG } from "../data/creatures";
-import { avatarEmoji } from "../data/avatars";
+import { decodeAvatar, renderAvatarSVG } from "../lib/avatar";
 import type { ParticipantRow } from "../lib/backend";
 
 interface Props {
   unlockedIds: Set<string>;
   onOpenCheckpoint: (c: Checkpoint) => void;
-  teammates: ParticipantRow[];
+  /** Everyone else on the walk (with a known position). */
+  walkers: ParticipantRow[];
 }
 
 const MANUAL_RANGE_M = 120; // show "I'm here" button when roughly near
@@ -71,12 +71,12 @@ function checkpointIcon(emoji: string, order: number, unlocked: boolean) {
   });
 }
 
-function playerIcon(emoji: string) {
+function playerIcon(avatarSvg: string) {
   return L.divIcon({
     className: "cp-marker",
-    html: `<div class="player-pin">${emoji}</div>`,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
+    html: `<div class="player-pin">${avatarSvg}</div>`,
+    iconSize: [30, 40],
+    iconAnchor: [15, 36],
   });
 }
 
@@ -89,7 +89,8 @@ const CLUSTER_PX = 38;
 interface Mate {
   device_id: string;
   name: string;
-  emoji: string;
+  /** Pre-rendered evolving-avatar SVG for the map pin. */
+  svg: string;
   lat: number;
   lng: number;
 }
@@ -108,14 +109,14 @@ function escapeHtml(s: string) {
   );
 }
 
-function mateIcon(name: string, emoji: string) {
+function mateIcon(name: string, avatarSvg: string) {
   return L.divIcon({
     className: "cp-marker",
-    html: `<div class="mate-pin"><span class="mate-emoji">${emoji}</span><span class="mate-name">${escapeHtml(
+    html: `<div class="mate-pin"><span class="mate-avatar">${avatarSvg}</span><span class="mate-name">${escapeHtml(
       name
     )}</span></div>`,
-    iconSize: [44, 40],
-    iconAnchor: [22, 30],
+    iconSize: [44, 48],
+    iconAnchor: [22, 40],
   });
 }
 
@@ -156,7 +157,7 @@ function clusterMates(map: L.Map, mates: Mate[]): Cluster[] {
   return clusters;
 }
 
-/** Renders teammates, collapsing nearby ones into a single numbered cluster. */
+/** Renders other walkers, collapsing nearby ones into a single numbered cluster. */
 function TeammatesLayer({ mates }: { mates: Mate[] }) {
   const map = useMap();
   // Clustering depends on zoom (pixel spacing changes), so recompute on zoomend.
@@ -178,7 +179,7 @@ function TeammatesLayer({ mates }: { mates: Mate[] }) {
           position={[cl.lat, cl.lng]}
           icon={
             cl.count === 1
-              ? mateIcon(cl.members[0].name, cl.members[0].emoji)
+              ? mateIcon(cl.members[0].name, cl.members[0].svg)
               : clusterIcon(cl.count)
           }
           interactive={false}
@@ -406,15 +407,17 @@ function ViewControls({ coord }: { coord: { lat: number; lng: number } | null })
   return null;
 }
 
-export function MapView({ unlockedIds, onOpenCheckpoint, teammates }: Props) {
+export function MapView({ unlockedIds, onOpenCheckpoint, walkers }: Props) {
   const distance = useGameStore((s) => s.distance);
   const lastFix = useGameStore((s) => s.lastFix);
   const gpsStatus = useGameStore((s) => s.gpsStatus);
   const accuracy = useGameStore((s) => s.accuracy);
-  const identity = useGameStore((s) => s.identity);
+  const myAvatar = useGameStore((s) => s.avatar);
 
   const player = lastFix?.coord ?? null;
-  const myIcon = playerIcon(avatarEmoji(identity?.avatar));
+  const myIcon = playerIcon(
+    myAvatar ? renderAvatarSVG(myAvatar, { scale: 1, background: null }) : "🧍"
+  );
 
   const withDistance = CHECKPOINTS.map((c) => {
     const dist = player ? haversine(player, { lat: c.lat, lng: c.lng }) : null;
@@ -425,20 +428,23 @@ export function MapView({ unlockedIds, onOpenCheckpoint, teammates }: Props) {
     .filter((w) => !unlockedIds.has(w.c.id))
     .sort((a, b) => (a.dist ?? Infinity) - (b.dist ?? Infinity))[0];
 
-  const toNextEgg = METRES_PER_EGG - (distance % METRES_PER_EGG);
-
   // Only the leg from the last reached checkpoint to the next one.
   const routeSegment = currentRouteSegment(unlockedIds);
 
-  const mates: Mate[] = teammates
+  const mates: Mate[] = walkers
     .filter((p) => p.lat != null && p.lng != null)
-    .map((p) => ({
-      device_id: p.device_id,
-      name: p.name,
-      emoji: avatarEmoji(p.avatar),
-      lat: p.lat!,
-      lng: p.lng!,
-    }));
+    .map((p) => {
+      const state = decodeAvatar(p.avatar);
+      return {
+        device_id: p.device_id,
+        name: p.name,
+        svg: state
+          ? renderAvatarSVG(state, { scale: 1, background: null })
+          : "🧍",
+        lat: p.lat!,
+        lng: p.lng!,
+      };
+    });
 
   return (
     <div className="flex flex-col gap-3 p-3">
@@ -449,8 +455,10 @@ export function MapView({ unlockedIds, onOpenCheckpoint, teammates }: Props) {
           <div className="text-sand text-[12px]">{formatDistance(distance)}</div>
         </div>
         <div className="text-right">
-          <div className="text-forest-300">NEXT EGG</div>
-          <div className="text-sand text-[12px]">{formatDistance(toNextEgg)}</div>
+          <div className="text-forest-300">CHECKPOINTS</div>
+          <div className="text-sand text-[12px]">
+            {unlockedIds.size}/{CHECKPOINTS.length}
+          </div>
         </div>
       </div>
 

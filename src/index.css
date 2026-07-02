@@ -142,3 +142,15 @@ button {
 .animate-pop {
   animation: pop 0.5s ease-out;
 }
+
+/* Evolving pixel-avatar pins (SVG replaces the old emoji markers). */
+.player-pin svg {
+  width: 26px;
+  height: auto;
+  filter: drop-shadow(0 0 3px #2f9c5e);
+}
+.mate-pin .mate-avatar svg {
+  width: 22px;
+  height: auto;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+}

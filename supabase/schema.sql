@@ -1,60 +1,60 @@
--- Run this in the Supabase SQL editor to set up the backend.
--- The app uses the anon key only (no auth), so RLS allows public read/insert/update.
--- This is fine for a one-day private event; tighten before any public exposure.
+-- Hindhede Wellness Walk — SOLO schema (v2, evolving avatars).
+-- Run in the Supabase SQL editor. The app uses the anon key only (no auth),
+-- so RLS allows public read/insert/update. Fine for a one-day private event;
+-- tighten before any public exposure.
+--
+-- v2 changes vs v1: teams are gone. Every walker is an individual with a
+-- unique name; checkpoint progress is per-device; participants.avatar now
+-- stores the encoded evolving-avatar state (e.g. "014|m1s0w2o1b1c2|durian_dodger").
+-- This drops the v1 tables — it's a one-day event app with no data to keep.
 
-create table if not exists teams (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  join_code text not null unique,
-  created_at timestamptz not null default now()
-);
+drop table if exists photos;
+drop table if exists checkpoint_progress;
+drop table if exists participants;
+drop table if exists teams;
 
-create table if not exists participants (
+create table participants (
   id uuid primary key default gen_random_uuid(),
-  team_id uuid not null references teams (id) on delete cascade,
   device_id text not null unique,
   name text not null,
   distance_m integer not null default 0,
+  -- Encoded evolving-avatar state (base + trait levels + earned background).
   avatar text,
   lat double precision,
   lng double precision,
   updated_at timestamptz not null default now()
 );
 
--- Avatar + live position columns (safe to re-run on an existing DB).
-alter table participants add column if not exists avatar text;
-alter table participants add column if not exists lat double precision;
-alter table participants add column if not exists lng double precision;
+-- Unique walker names (case-insensitive). The app also checks before joining
+-- so users get a friendly message instead of a DB error.
+create unique index participants_name_unique on participants (lower(name));
 
-create table if not exists checkpoint_progress (
+create table checkpoint_progress (
   id uuid primary key default gen_random_uuid(),
-  team_id uuid not null references teams (id) on delete cascade,
+  device_id text not null references participants (device_id) on delete cascade,
   checkpoint_id text not null,
   via_manual boolean not null default false,
   unlocked_at timestamptz not null default now(),
-  unique (team_id, checkpoint_id)
+  unique (device_id, checkpoint_id)
 );
 
-create table if not exists photos (
+create table photos (
   id uuid primary key default gen_random_uuid(),
-  team_id uuid not null references teams (id) on delete cascade,
+  device_id text not null,
   checkpoint_id text not null,
   storage_path text not null,
   created_at timestamptz not null default now()
 );
 
 -- Realtime
-alter publication supabase_realtime add table teams;
 alter publication supabase_realtime add table participants;
 alter publication supabase_realtime add table checkpoint_progress;
 
 -- Open RLS (event-only; revisit before public use)
-alter table teams enable row level security;
 alter table participants enable row level security;
 alter table checkpoint_progress enable row level security;
 alter table photos enable row level security;
 
-create policy "public teams" on teams for all using (true) with check (true);
 create policy "public participants" on participants for all using (true) with check (true);
 create policy "public checkpoints" on checkpoint_progress for all using (true) with check (true);
 create policy "public photos" on photos for all using (true) with check (true);

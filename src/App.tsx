@@ -165,7 +165,7 @@ export default function App() {
         {ADMIN_ENABLED ? (
           <NavBtn label="Admin" icon="🛠️" on={tab === "admin"} go={() => setTab("admin")} />
         ) : (
-          <div className="py-3 text-center text-[8px] text-forest-800">—</div>
+          <div className="py-3 text-center text-[8px] text-forest-500">—</div>
         )}
       </nav>
 

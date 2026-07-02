@@ -46,7 +46,7 @@ export function YouView({ unlockedIds }: Props) {
         <div>
           <div className="text-[9px] text-forest-300 mb-1">✨ DOING WELL</div>
           {wins.length === 0 && (
-            <div className="text-[8px] text-forest-800">— nothing yet, keep walking</div>
+            <div className="text-[8px] text-forest-500">— nothing yet, keep walking</div>
           )}
           {wins.map((w) => (
             <div key={w.dim} className="text-[8px] text-sand leading-relaxed">
@@ -57,7 +57,7 @@ export function YouView({ unlockedIds }: Props) {
         <div>
           <div className="text-[9px] text-forest-300 mb-1">🌱 ROOM TO GROW</div>
           {growth.length === 0 && (
-            <div className="text-[8px] text-forest-800">— nothing flagged</div>
+            <div className="text-[8px] text-forest-500">— nothing flagged</div>
           )}
           {growth.map((g) => (
             <div key={g.dim} className="text-[8px] text-sand leading-relaxed">
@@ -66,7 +66,7 @@ export function YouView({ unlockedIds }: Props) {
           ))}
         </div>
         {steady.length > 0 && (
-          <div className="text-[7px] text-forest-800">
+          <div className="text-[7px] text-forest-500">
             Not asked yet: {steady.map((s) => s.label).join(" · ")}
           </div>
         )}

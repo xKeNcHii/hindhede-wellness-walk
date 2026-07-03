@@ -29,12 +29,6 @@ const MANUAL_RANGE_M = 120; // show "I'm here" button when roughly near
 // Park centre (average of the checkpoint cluster) used as the initial view.
 const PARK_CENTER: [number, number] = [1.34874, 103.77573];
 
-// Keep the view pinned around the park so you can't zoom/pan out into a wide,
-// cluttered city view where everything becomes unreadable.
-const PARK_BOUNDS: L.LatLngBoundsExpression = [
-  [1.3405, 103.7715],
-  [1.3525, 103.7825],
-];
 const MIN_ZOOM = 15;
 const MAX_ZOOM = 19;
 
@@ -257,16 +251,6 @@ function currentRouteSegment(unlockedIds: Set<string>): [number, number][] | nul
   return seg.length >= 2 ? seg : null;
 }
 
-/** On first mount, frame the whole route so all checkpoints are visible. */
-function FitRoute() {
-  const map = useMap();
-  useEffect(() => {
-    map.fitBounds(routeBounds(), { padding: [40, 40] });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return null;
-}
-
 /**
  * Markers are a fixed pixel size, so they look oversized when zoomed out.
  * Scale them down with the zoom level via a CSS variable on the map container.
@@ -286,47 +270,6 @@ function MarkerScaler() {
       map.off("zoomend", apply);
     };
   }, [map]);
-  return null;
-}
-
-/**
- * Center on the player once, on the first GPS fix, then leave the map alone so
- * you can pan and zoom freely. Recentering afterwards is manual, via the 📍
- * "Center on me" control.
- */
-function FollowPlayer({ coord }: { coord: { lat: number; lng: number } | null }) {
-  const map = useMap();
-  const centered = useRef(false);
-
-  useEffect(() => {
-    if (!coord || centered.current) return;
-    map.setView([coord.lat, coord.lng], 17, { animate: false });
-    centered.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coord?.lat, coord?.lng]);
-
-  return null;
-}
-
-/**
- * Keep the map pinned to the park UNLESS the player's fix is outside it — then
- * expand the allowed bounds to include them so following can actually center on
- * the dot. At the event everyone is inside the park, so this is a no-op there;
- * it's what lets you see yourself while testing from elsewhere.
- */
-function BoundsManager({ coord }: { coord: { lat: number; lng: number } | null }) {
-  const map = useMap();
-  useEffect(() => {
-    const base = L.latLngBounds(PARK_BOUNDS as L.LatLngBoundsLiteral);
-    if (coord && !base.contains([coord.lat, coord.lng])) {
-      const extended = L.latLngBounds(PARK_BOUNDS as L.LatLngBoundsLiteral);
-      extended.extend([coord.lat, coord.lng]);
-      map.setMaxBounds(extended.pad(0.2));
-    } else {
-      map.setMaxBounds(base);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, coord?.lat, coord?.lng]);
   return null;
 }
 
@@ -425,8 +368,6 @@ export function MapView({ unlockedIds, onOpenCheckpoint, walkers }: Props) {
           zoom={17}
           minZoom={MIN_ZOOM}
           maxZoom={MAX_ZOOM}
-          maxBounds={PARK_BOUNDS}
-          maxBoundsViscosity={1}
           scrollWheelZoom
           inertia={false}
           style={{ height: "100%", width: "100%" }}
@@ -468,11 +409,8 @@ export function MapView({ unlockedIds, onOpenCheckpoint, walkers }: Props) {
 
           {player && <Marker position={[player.lat, player.lng]} icon={myIcon} />}
 
-          <FitRoute />
           <MarkerScaler />
-          <BoundsManager coord={player} />
           <ViewControls coord={player} />
-          <FollowPlayer coord={player} />
         </MapContainer>
       </div>
 

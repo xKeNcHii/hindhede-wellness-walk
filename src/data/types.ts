@@ -20,6 +20,11 @@ export interface Checkpoint {
    * unlocked, then it reveals. Used to keep the main-park stops secret until the
    * walker reaches the Entrance. */
   revealAfter?: string;
+  /** Explicitly pins one reflection question (by its id in reflection.ts) to
+   * this checkpoint. Lets the six questions be scattered intentionally rather
+   * than by array position, so reordering/swapping placeholder checkpoints
+   * doesn't shuffle the questions. Falls back to positional mapping when unset. */
+  questionId?: string;
   wellness: { title: string; body: string };
   activity: { title: string; body: string };
 }

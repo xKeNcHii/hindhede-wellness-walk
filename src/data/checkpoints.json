@@ -26,6 +26,7 @@
     "lng": 103.781343,
     "radius": 35,
     "type": "standard",
+    "questionId": "wld_load",
     "wellness": {
       "title": "One Rock at a Time",
       "body": "This old quarry was cleared stone by stone. When everything feels like too much, it helps to do the same — pick one small thing and begin. Breathe, feel your feet on the ground, and let the pile shrink one rock at a time."
@@ -44,6 +45,7 @@
     "lng": 103.781689,
     "radius": 35,
     "type": "standard",
+    "questionId": "mod_setback",
     "wellness": {
       "title": "Still Water",
       "body": "The quarry filled slowly into this quiet wetland — calm can grow from something once noisy and hard. Pause at the water's edge, soften your gaze, and let your breathing slow to match the stillness."
@@ -81,6 +83,7 @@
     "lng": 103.775919,
     "radius": 35,
     "type": "standard",
+    "questionId": "mov_deskbreak",
     "wellness": {
       "title": "Begin with Awareness",
       "body": "This is where the main trail starts. As you step onto the path, notice the change underfoot and the shade of the trees. Drop your shoulders, unclench your jaw, and let your pace slow to match the forest. The rest of the checkpoints reveal themselves from here."
@@ -100,6 +103,7 @@
     "radius": 35,
     "type": "swing",
     "revealAfter": "starting-point",
+    "questionId": "slp_lunch",
     "wellness": {
       "title": "Play is Good for You",
       "body": "Play lowers cortisol and boosts mood. You're allowed to be a kid for a minute. There's a playground right here — use it."
@@ -119,6 +123,7 @@
     "radius": 30,
     "type": "swing",
     "revealAfter": "starting-point",
+    "questionId": "bnd_afterhours",
     "wellness": {
       "title": "Widen Your View",
       "body": "Gazing at a wide, distant scene like the quarry relaxes the eyes and the nervous system. Soften your focus and take in the whole view for a moment."
@@ -138,6 +143,7 @@
     "radius": 35,
     "type": "photo",
     "revealAfter": "starting-point",
+    "questionId": "sup_ask",
     "wellness": {
       "title": "Arrive & Reflect",
       "body": "You've completed the loop — take that in. Notice how your body and mind feel now versus when you started. A walk in nature is one of the simplest, most reliable ways to reset. Carry a little of this calm back with you."

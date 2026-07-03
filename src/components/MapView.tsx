@@ -290,89 +290,20 @@ function MarkerScaler() {
 }
 
 /**
- * Hard-follow the player: re-center on every GPS fix, and snap back if the user
- * tries to pan away. Zoom is still allowed. The first fix jumps straight to z17;
- * subsequent fixes pan smoothly.
+ * Center on the player once, on the first GPS fix, then leave the map alone so
+ * you can pan and zoom freely. Recentering afterwards is manual, via the 📍
+ * "Center on me" control.
  */
-const PAN_DURATION_MS = 700;
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-
 function FollowPlayer({ coord }: { coord: { lat: number; lng: number } | null }) {
   const map = useMap();
-  const coordRef = useRef(coord);
-  coordRef.current = coord;
   const centered = useRef(false);
-  // True while WE are driving the map, so the moveend handler doesn't treat our
-  // own recenter frames as a user pan (which would loop forever).
-  const programmatic = useRef(false);
-  const raf = useRef<number | null>(null);
 
-  const cancelTween = () => {
-    if (raf.current != null) {
-      cancelAnimationFrame(raf.current);
-      raf.current = null;
-    }
-  };
-
-  // Smooth pan to a target by tweening instant setView() calls. Leaflet's built-in
-  // pan animation is aborted/desynced by the MapLibre GL base layer, but an
-  // un-animated setView per frame moves cleanly — so we animate it ourselves.
-  const panTween = (lat: number, lng: number) => {
-    cancelTween();
-    const from = map.getCenter();
-    const dLat = lat - from.lat;
-    const dLng = lng - from.lng;
-    // Already there — nothing to do.
-    if (Math.abs(dLat) < 1e-7 && Math.abs(dLng) < 1e-7) return;
-    const zoom = map.getZoom();
-    const t0 = performance.now();
-    const step = (now: number) => {
-      const p = Math.min(1, (now - t0) / PAN_DURATION_MS);
-      const e = easeOutCubic(p);
-      programmatic.current = true;
-      map.setView([from.lat + dLat * e, from.lng + dLng * e], zoom, { animate: false });
-      raf.current = p < 1 ? requestAnimationFrame(step) : null;
-    };
-    raf.current = requestAnimationFrame(step);
-  };
-
-  // Follow every new GPS fix. The very first fix jumps instantly; later fixes
-  // glide smoothly.
   useEffect(() => {
-    if (!coord) return;
-    if (!centered.current) {
-      programmatic.current = true;
-      map.setView([coord.lat, coord.lng], 17, { animate: false });
-      centered.current = true;
-    } else {
-      panTween(coord.lat, coord.lng);
-    }
+    if (!coord || centered.current) return;
+    map.setView([coord.lat, coord.lng], 17, { animate: false });
+    centered.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coord?.lat, coord?.lng]);
-
-  // Smoothly snap back after the user pans/zooms away. A user grab cancels any
-  // in-flight tween so they can drag freely; releasing rubber-bands them home.
-  useEffect(() => {
-    const onUserGrab = () => cancelTween();
-    const onMoveEnd = () => {
-      if (programmatic.current) {
-        programmatic.current = false;
-        return;
-      }
-      const c = coordRef.current;
-      if (c) panTween(c.lat, c.lng);
-    };
-    map.on("dragstart", onUserGrab);
-    map.on("zoomstart", onUserGrab);
-    map.on("moveend", onMoveEnd);
-    return () => {
-      map.off("dragstart", onUserGrab);
-      map.off("zoomstart", onUserGrab);
-      map.off("moveend", onMoveEnd);
-      cancelTween();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map]);
 
   return null;
 }

@@ -110,8 +110,27 @@
     }
   },
   {
-    "id": "lookout-point",
+    "id": "pulai-hut",
     "order": 7,
+    "name": "Pulai Hut",
+    "sprite": "swing",
+    "lat": 1.3489,
+    "lng": 103.77594,
+    "radius": 35,
+    "type": "standard",
+    "revealAfter": "starting-point",
+    "wellness": {
+      "title": "Find Your Rhythm",
+      "body": "A long swing is just gentle, rocking motion — the same rhythm that settles a restless mind. Hop on, let your shoulders drop, and let the back-and-forth slow your breathing for a minute."
+    },
+    "activity": {
+      "title": "The Long Swing",
+      "body": "There's a long swing here — take turns and enjoy the ride. Go one at a time, keep a firm grip, and watch the space around you. Don't push it too high — the aim is a big grin, not a twisted ankle."
+    }
+  },
+  {
+    "id": "lookout-point",
+    "order": 8,
     "name": "Lookout Point",
     "sprite": "water",
     "lat": 1.349353,
@@ -127,7 +146,7 @@
   },
   {
     "id": "visitor-centre",
-    "order": 8,
+    "order": 9,
     "name": "Visitor Centre (Endpoint)",
     "sprite": "camera",
     "lat": 1.3484361090474006,

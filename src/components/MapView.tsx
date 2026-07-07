@@ -387,9 +387,9 @@ export function MapView({ unlockedIds, onOpenCheckpoint, walkers }: Props) {
             // Masked main-park stops stay "?" only until the walker reaches ANY
             // checkpoint — normally the Entrance, but any unlock counts so a
             // phone that was off (and missed the Entrance geofence) still
-            // reveals the rest. A gated stop (unlockLast) stays masked until its
-            // gate opens. Secret stays a dungeon gate until reached.
-            const revealed = c.unlockLast
+            // reveals the rest. A gated stop (unlockAfter) stays masked until its
+            // prerequisite is unlocked. Secret stays a dungeon gate until reached.
+            const revealed = c.unlockAfter
               ? canUnlockCheckpoint(c, unlockedIds)
               : !c.revealAfter || unlockedIds.size > 0;
             const icon =

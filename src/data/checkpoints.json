@@ -45,10 +45,10 @@
     "lng": 103.781689,
     "radius": 35,
     "type": "standard",
-    "questionId": "mod_setback",
+    "questionId": "slp_lunch",
     "wellness": {
       "title": "Still Water",
-      "body": "The quarry filled slowly into this quiet wetland — calm can grow from something once noisy and hard. Pause at the water's edge, soften your gaze, and let your breathing slow to match the stillness."
+      "body": "The quarry's roar gave way to this quiet wetland — things only settle once you step away from the noise. Do that now: leave the trail's push for a minute, pause at the water's edge, soften your gaze, and let your breathing slow. A real break isn't time lost — it's what makes the rest of the day work."
     },
     "activity": {
       "title": "Spot the Life",
@@ -83,10 +83,10 @@
     "lng": 103.775919,
     "radius": 35,
     "type": "standard",
-    "questionId": "mov_deskbreak",
+    "questionId": "bnd_afterhours",
     "wellness": {
-      "title": "Begin with Awareness",
-      "body": "This is where the main trail starts. As you step onto the path, notice the change underfoot and the shade of the trees. Drop your shoulders, unclench your jaw, and let your pace slow to match the forest. The rest of the checkpoints reveal themselves from here."
+      "title": "Leave It at the Gate",
+      "body": "This gate is where the trail — and your own time — begins. Step through and let the outside world stay outside: silence the buzzing, drop your shoulders, unclench your jaw, and let your pace slow to match the forest. Off is off — that boundary is how the calm actually reaches you. The rest of the trail opens up from here."
     },
     "activity": {
       "title": "First Steps Together",
@@ -103,10 +103,10 @@
     "radius": 35,
     "type": "swing",
     "revealAfter": "starting-point",
-    "questionId": "slp_lunch",
+    "questionId": "mov_deskbreak",
     "wellness": {
-      "title": "Play is Good for You",
-      "body": "Play lowers cortisol and boosts mood. You're allowed to be a kid for a minute. There's a playground right here — use it."
+      "title": "Get Up and Play",
+      "body": "Your body wasn't built to sit still for hours — and your focus wasn't either. There's a playground right here, so use it: swing, stretch, climb, shake the stiffness out. A minute of moving resets you more than pushing through ever will."
     }
   },
   {
@@ -118,8 +118,7 @@
     "lng": 103.77594,
     "radius": 35,
     "type": "standard",
-    "revealAfter": "starting-point",
-    "unlockLast": true,
+    "unlockAfter": "lookout-point",
     "wellness": {
       "title": "Find Your Rhythm",
       "body": "A long swing is just gentle, rocking motion — the same rhythm that settles a restless mind. Hop on, let your shoulders drop, and let the back-and-forth slow your breathing for a minute."
@@ -139,10 +138,10 @@
     "radius": 30,
     "type": "swing",
     "revealAfter": "starting-point",
-    "questionId": "bnd_afterhours",
+    "questionId": "mod_setback",
     "wellness": {
       "title": "Widen Your View",
-      "body": "Gazing at a wide, distant scene like the quarry relaxes the eyes and the nervous system. Soften your focus and take in the whole view for a moment."
+      "body": "Up close, a setback fills the whole frame. Step back to a wide view like this and it shrinks to what it really is — one hard moment, not the whole story. Soften your focus, take in the distance, and let that same wide lens fall on whatever's been weighing on you."
     }
   },
   {
@@ -158,7 +157,7 @@
     "questionId": "sup_ask",
     "wellness": {
       "title": "Arrive & Reflect",
-      "body": "You've completed the loop — take that in. Notice how your body and mind feel now versus when you started. A walk in nature is one of the simplest, most reliable ways to reset. Carry a little of this calm back with you."
+      "body": "You've closed the loop — and you didn't do it alone. Notice how your body and mind feel now versus when you started, and who was around you for it. The easiest walks are the shared ones; the same is true back at your desk. Carry that — and a little of this calm — back with you."
     },
     "activity": {
       "title": "Final Group Photo",

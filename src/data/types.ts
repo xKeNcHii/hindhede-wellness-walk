@@ -25,10 +25,10 @@ export interface Checkpoint {
    * than by array position, so reordering/swapping placeholder checkpoints
    * doesn't shuffle the questions. Falls back to positional mapping when unset. */
   questionId?: string;
-  /** Keep this checkpoint locked until every earlier non-secret checkpoint has
-   * been unlocked. Used for the return-leg stop that must come last, so a walker
-   * passing near it early (e.g. on the way out) can't unlock it ahead of time. */
-  unlockLast?: boolean;
+  /** Keep this checkpoint locked until the checkpoint with this id is unlocked.
+   * Used for the return-leg stop so a walker passing near it on the way out
+   * can't unlock it before reaching the turnaround point. */
+  unlockAfter?: string;
   wellness: { title: string; body: string };
   /** Optional — a checkpoint may have no team activity. */
   activity?: { title: string; body: string };
@@ -42,16 +42,14 @@ export function checkpointById(id: string): Checkpoint | undefined {
   return CHECKPOINTS.find((c) => c.id === id);
 }
 
-/** Whether `c` is allowed to unlock yet. Always true unless it's an
- * `unlockLast` stop and some earlier non-secret checkpoint is still locked. */
+/** Whether `c` is allowed to unlock yet. Always true unless it has an
+ * `unlockAfter` prerequisite checkpoint that hasn't been unlocked yet. */
 export function canUnlockCheckpoint(
   c: Checkpoint,
   unlockedIds: Set<string>
 ): boolean {
-  if (!c.unlockLast) return true;
-  return CHECKPOINTS.every(
-    (o) => o.secret || o.order >= c.order || unlockedIds.has(o.id)
-  );
+  if (!c.unlockAfter) return true;
+  return unlockedIds.has(c.unlockAfter);
 }
 
 /** Player-dot calibration: anchor real GPS to the map image corners (0..1).

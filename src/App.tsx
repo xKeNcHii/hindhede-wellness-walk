@@ -12,7 +12,7 @@ import { useWakeLock } from "./hooks/useWakeLock";
 import { useSnapshot } from "./hooks/useSnapshot";
 import { loadIdentity, clearIdentity, Identity } from "./lib/identity";
 import { upsertParticipant } from "./lib/backend";
-import { CHECKPOINTS, Checkpoint } from "./data/types";
+import { CHECKPOINTS, Checkpoint, canUnlockCheckpoint } from "./data/types";
 import { DURIAN_CHECKPOINT_ID } from "./data/reflection";
 import { haversine, formatDistance } from "./lib/geo";
 import { encodeAvatar } from "./lib/avatar";
@@ -90,6 +90,9 @@ export default function App() {
     for (const c of CHECKPOINTS) {
       const dist = haversine(lastFix.coord, { lat: c.lat, lng: c.lng });
       if (dist <= c.radius) {
+        // Gated stops (e.g. the return-leg Pulai Hut) stay locked until every
+        // earlier checkpoint is done, even if the walker is standing on them.
+        if (!canUnlockCheckpoint(c, unlockedIds)) continue;
         if (!unlockedIds.has(c.id)) unlock(c.id, false);
         if (c.id === DURIAN_CHECKPOINT_ID) earnBackground("durian_dodger");
         if (!autoOpened.current.has(c.id) && !active) {
@@ -174,11 +177,6 @@ export default function App() {
           checkpoint={active}
           unlocked={unlockedIds.has(active.id)}
           distanceToIt={distanceToActive}
-          identity={identity}
-          onUnlock={(viaManual) => {
-            unlock(active.id, viaManual);
-            if (active.id === DURIAN_CHECKPOINT_ID) earnBackground("durian_dodger");
-          }}
           onClose={() => setActive(null)}
         />
       )}

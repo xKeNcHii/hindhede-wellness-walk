@@ -2,8 +2,6 @@ import { useState } from "react";
 import { Checkpoint } from "../data/types";
 import { PixelButton } from "./PixelButton";
 import { Sprite } from "./Sprite";
-import { uploadPhoto } from "../lib/backend";
-import { Identity } from "../lib/identity";
 import { formatDistance } from "../lib/geo";
 import { questionForCheckpoint, DURIAN_CHECKPOINT_ID } from "../data/reflection";
 import { useGameStore } from "../store/useGameStore";
@@ -13,8 +11,6 @@ interface Props {
   checkpoint: Checkpoint;
   unlocked: boolean;
   distanceToIt: number | null;
-  identity: Identity;
-  onUnlock: (viaManual: boolean) => void;
   onClose: () => void;
 }
 
@@ -22,12 +18,8 @@ export function CheckpointScreen({
   checkpoint,
   unlocked,
   distanceToIt,
-  identity,
-  onUnlock,
   onClose,
 }: Props) {
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [tip, setTip] = useState<string | null>(null);
 
   const avatar = useGameStore((s) => s.avatar);
@@ -37,17 +29,6 @@ export function CheckpointScreen({
   const inRange = distanceToIt != null && distanceToIt <= checkpoint.radius;
   const question = questionForCheckpoint(checkpoint.id);
   const alreadyAnswered = Boolean(answered[checkpoint.id]);
-
-  const handlePhoto = async (file: File) => {
-    setUploading(true);
-    try {
-      const url = await uploadPhoto(identity.deviceId, checkpoint.id, file);
-      setPhotoUrl(url.startsWith("blob:") || url.startsWith("http") ? url : null);
-      if (!unlocked) onUnlock(false);
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleAnswer = (optIdx: number) => {
     if (!question || alreadyAnswered) return;
@@ -167,31 +148,6 @@ export function CheckpointScreen({
           <p className="text-[9px] leading-relaxed text-sand">
             {checkpoint.activity.body}
           </p>
-
-          {checkpoint.type === "photo" && (
-            <div className="mt-3 flex flex-col gap-2">
-              {photoUrl && (
-                <img
-                  src={photoUrl}
-                  alt="Group"
-                  className="w-full pixel-border object-cover max-h-60"
-                />
-              )}
-              <label className="pixel-border bg-forest-700 text-sand text-[9px] text-center py-3 cursor-pointer">
-                {uploading ? "Uploading…" : "📸 Upload group photo"}
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) void handlePhoto(f);
-                  }}
-                />
-              </label>
-            </div>
-          )}
         </section>
         )}
 

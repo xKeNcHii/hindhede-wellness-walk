@@ -6,7 +6,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "@maplibre/maplibre-gl-leaflet";
 import { useGameStore } from "../store/useGameStore";
-import { CHECKPOINTS, Checkpoint } from "../data/types";
+import { CHECKPOINTS, Checkpoint, canUnlockCheckpoint } from "../data/types";
 import { ROUTE } from "../data/route";
 import { haversine, formatDistance } from "../lib/geo";
 import { Sprite, SPRITES } from "./Sprite";
@@ -324,7 +324,7 @@ export function MapView({ unlockedIds, onOpenCheckpoint, walkers }: Props) {
   });
 
   const next = withDistance
-    .filter((w) => !unlockedIds.has(w.c.id))
+    .filter((w) => !unlockedIds.has(w.c.id) && canUnlockCheckpoint(w.c, unlockedIds))
     .sort((a, b) => (a.dist ?? Infinity) - (b.dist ?? Infinity))[0];
 
   // Only the leg from the last reached checkpoint to the next one.
@@ -387,8 +387,11 @@ export function MapView({ unlockedIds, onOpenCheckpoint, walkers }: Props) {
             // Masked main-park stops stay "?" only until the walker reaches ANY
             // checkpoint — normally the Entrance, but any unlock counts so a
             // phone that was off (and missed the Entrance geofence) still
-            // reveals the rest. Secret stays a dungeon gate until reached.
-            const revealed = !c.revealAfter || unlockedIds.size > 0;
+            // reveals the rest. A gated stop (unlockLast) stays masked until its
+            // gate opens. Secret stays a dungeon gate until reached.
+            const revealed = c.unlockLast
+              ? canUnlockCheckpoint(c, unlockedIds)
+              : !c.revealAfter || unlockedIds.size > 0;
             const icon =
               c.secret && !unlocked
                 ? secretIcon()

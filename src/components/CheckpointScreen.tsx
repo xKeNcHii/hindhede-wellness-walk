@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Checkpoint } from "../data/types";
 import { PixelButton } from "./PixelButton";
 import { Sprite } from "./Sprite";
@@ -6,6 +6,13 @@ import { formatDistance } from "../lib/geo";
 import { questionForCheckpoint, DURIAN_CHECKPOINT_ID } from "../data/reflection";
 import { useGameStore } from "../store/useGameStore";
 import { PixelAvatar } from "./PixelAvatar";
+import { SPRITES, AvatarState } from "../lib/avatar";
+
+interface Reward {
+  label: string; // dimension name, e.g. "Workload & Stress"
+  prop: string; // the visual the walker gained/carries, e.g. "sunshine overhead"
+  delta: number; // +1 healthy / -1 unhealthy / 0 neutral
+}
 
 interface Props {
   checkpoint: Checkpoint;
@@ -21,6 +28,7 @@ export function CheckpointScreen({
   onClose,
 }: Props) {
   const [tip, setTip] = useState<string | null>(null);
+  const [reward, setReward] = useState<Reward | null>(null);
 
   const avatar = useGameStore((s) => s.avatar);
   const answered = useGameStore((s) => s.answered);
@@ -35,6 +43,12 @@ export function CheckpointScreen({
     const opt = question.options[optIdx];
     answerReflection(checkpoint.id, question.id, question.dim, opt.delta);
     setTip(opt.delta < 0 && opt.tip ? opt.tip : null);
+    // Show what the answer did to the avatar. Read the freshly-updated state so
+    // we reflect the actual resulting trait level (a prior struggle sticks).
+    const fresh = useGameStore.getState().avatar;
+    const level = fresh?.traits[question.dim] ?? 1;
+    const meta = SPRITES.dimensionMeta[question.dim];
+    setReward({ label: meta.label, prop: meta.props[String(level)] ?? "", delta: opt.delta });
   };
 
   return (
@@ -154,6 +168,76 @@ export function CheckpointScreen({
         <PixelButton variant="ghost" onClick={onClose}>
           Back to map
         </PixelButton>
+      </div>
+
+      {reward && avatar && (
+        <RewardPop reward={reward} avatar={avatar} onClose={() => setReward(null)} />
+      )}
+    </div>
+  );
+}
+
+/** Celebratory pop-up shown right after answering: what the walker's avatar
+ * gained (or now carries), with the updated sprite. Auto-dismisses. */
+function RewardPop({
+  reward,
+  avatar,
+  onClose,
+}: {
+  reward: Reward;
+  avatar: AvatarState;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 4200);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  const healthy = reward.delta > 0;
+  const unhealthy = reward.delta < 0;
+  const head = healthy
+    ? "✨ NEW LOOK UNLOCKED"
+    : unhealthy
+    ? "☁️ A STRUGGLE TO CARRY"
+    : "➖ STEADY FOR NOW";
+
+  return (
+    <div
+      className="reward-backdrop fixed inset-0 z-[1300] flex items-center justify-center bg-black/70 p-6"
+      onClick={onClose}
+    >
+      <div
+        className="reward-card pixel-border bg-forest-800 p-5 flex flex-col items-center gap-3 text-center w-full max-w-[280px]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-2 text-[9px]">
+          {healthy && <span className="animate-sparkle text-[12px]">✨</span>}
+          <span className={healthy ? "text-clay" : unhealthy ? "text-forest-300" : "text-sand"}>
+            {head}
+          </span>
+          {healthy && <span className="animate-sparkle text-[12px]">✨</span>}
+        </div>
+
+        <div className="animate-pop">
+          <PixelAvatar state={avatar} scale={2} title={false} background={null} width={96} />
+        </div>
+
+        <div className="text-[8px] text-forest-300">{reward.label}</div>
+        {reward.prop ? (
+          <p className="text-[9px] text-sand leading-relaxed">
+            {healthy ? "Your walker gains " : unhealthy ? "Your walker now carries " : ""}
+            <span className="text-clay">{reward.prop}</span>.
+          </p>
+        ) : (
+          <p className="text-[9px] text-sand leading-relaxed">No visible change this time.</p>
+        )}
+
+        <button
+          onClick={onClose}
+          className="pixel-border bg-forest-700 text-sand text-[8px] px-5 py-2 mt-1"
+        >
+          Nice!
+        </button>
       </div>
     </div>
   );

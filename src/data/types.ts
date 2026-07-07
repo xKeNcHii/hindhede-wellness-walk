@@ -26,7 +26,8 @@ export interface Checkpoint {
    * doesn't shuffle the questions. Falls back to positional mapping when unset. */
   questionId?: string;
   wellness: { title: string; body: string };
-  activity: { title: string; body: string };
+  /** Optional — a checkpoint may have no team activity. */
+  activity?: { title: string; body: string };
 }
 
 export const CHECKPOINTS = (checkpointsJson as Checkpoint[]).sort(

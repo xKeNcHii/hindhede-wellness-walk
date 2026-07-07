@@ -111,7 +111,7 @@
   },
   {
     "id": "pulai-hut",
-    "order": 7,
+    "order": 8,
     "name": "Pulai Hut",
     "sprite": "swing",
     "lat": 1.3489,
@@ -119,6 +119,7 @@
     "radius": 35,
     "type": "standard",
     "revealAfter": "starting-point",
+    "unlockLast": true,
     "wellness": {
       "title": "Find Your Rhythm",
       "body": "A long swing is just gentle, rocking motion — the same rhythm that settles a restless mind. Hop on, let your shoulders drop, and let the back-and-forth slow your breathing for a minute."
@@ -130,7 +131,7 @@
   },
   {
     "id": "lookout-point",
-    "order": 8,
+    "order": 7,
     "name": "Lookout Point",
     "sprite": "water",
     "lat": 1.349353,
@@ -152,7 +153,7 @@
     "lat": 1.3484361090474006,
     "lng": 103.77667377813911,
     "radius": 35,
-    "type": "photo",
+    "type": "standard",
     "revealAfter": "starting-point",
     "questionId": "sup_ask",
     "wellness": {
@@ -161,7 +162,7 @@
     },
     "activity": {
       "title": "Final Group Photo",
-      "body": "Gather the whole team for a group photo to mark the end of the walk. Snap it and upload it below — smiles mandatory."
+      "body": "Gather the whole team for a group photo to mark the end of the walk — smiles mandatory."
     }
   }
 ]

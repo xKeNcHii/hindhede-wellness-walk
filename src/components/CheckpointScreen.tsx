@@ -158,7 +158,8 @@ export function CheckpointScreen({
           </section>
         )}
 
-        {/* Activity */}
+        {/* Activity (optional — some checkpoints have none) */}
+        {checkpoint.activity && (
         <section className="pixel-border bg-forest-800 p-4">
           <h3 className="text-[10px] text-forest-300 mb-2">
             🤝 {checkpoint.activity.title}
@@ -192,6 +193,7 @@ export function CheckpointScreen({
             </div>
           )}
         </section>
+        )}
 
         <PixelButton variant="ghost" onClick={onClose}>
           Back to map

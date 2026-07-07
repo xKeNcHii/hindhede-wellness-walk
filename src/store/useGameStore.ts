@@ -9,7 +9,7 @@ import {
   awardBackground,
   encodeAvatar,
 } from "../lib/avatar";
-import { upsertParticipant, unlockCheckpoint } from "../lib/backend";
+import { upsertParticipant, unlockCheckpoint, deleteParticipant } from "../lib/backend";
 
 export type GpsStatus = "idle" | "requesting" | "tracking" | "denied" | "unavailable";
 
@@ -139,6 +139,10 @@ export const useGameStore = create<GameState>((set, get) => {
     },
 
     resetProgress: () => {
+      // Delete this walker from the shared DB so they disappear from the
+      // leaderboard and map, not just locally. Runs before identity is cleared.
+      const { identity } = get();
+      if (identity) void deleteParticipant(identity.deviceId);
       saveProgress({ distance: 0, avatar: null, answered: {} });
       set({ distance: 0, avatar: null, answered: {} });
     },

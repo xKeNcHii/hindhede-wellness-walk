@@ -141,6 +141,24 @@ export async function unlockCheckpoint(
   }
 }
 
+/** Remove a walker entirely: their participant row and (via the device_id
+ * foreign key's ON DELETE CASCADE) all their checkpoint progress. Used by
+ * "reset" so the walker vanishes from the leaderboard and map for everyone. */
+export async function deleteParticipant(deviceId: string): Promise<void> {
+  if (isRemote && supabase) {
+    const { error } = await supabase
+      .from("participants")
+      .delete()
+      .eq("device_id", deviceId);
+    if (error) throw error;
+    return;
+  }
+  const db = readLocal();
+  db.participants = db.participants.filter((p) => p.device_id !== deviceId);
+  db.checkpoints = db.checkpoints.filter((c) => c.device_id !== deviceId);
+  writeLocal(db);
+}
+
 export async function fetchSnapshot(): Promise<Snapshot> {
   if (isRemote && supabase) {
     const [participants, checkpoints] = await Promise.all([

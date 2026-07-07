@@ -174,7 +174,6 @@ export default function App() {
           checkpoint={active}
           unlocked={unlockedIds.has(active.id)}
           distanceToIt={distanceToActive}
-          walkers={snapshot.participants}
           identity={identity}
           onUnlock={(viaManual) => {
             unlock(active.id, viaManual);

@@ -384,9 +384,11 @@ export function MapView({ unlockedIds, onOpenCheckpoint, walkers }: Props) {
 
           {CHECKPOINTS.map((c) => {
             const unlocked = unlockedIds.has(c.id);
-            const revealed = !c.revealAfter || unlockedIds.has(c.revealAfter);
-            // Secret stays a dungeon gate until reached; masked main-park stops
-            // stay "?" until the Entrance is unlocked. Both block early taps.
+            // Masked main-park stops stay "?" only until the walker reaches ANY
+            // checkpoint — normally the Entrance, but any unlock counts so a
+            // phone that was off (and missed the Entrance geofence) still
+            // reveals the rest. Secret stays a dungeon gate until reached.
+            const revealed = !c.revealAfter || unlockedIds.size > 0;
             const icon =
               c.secret && !unlocked
                 ? secretIcon()
@@ -432,8 +434,8 @@ export function MapView({ unlockedIds, onOpenCheckpoint, walkers }: Props) {
           <div className="text-sand text-[10px] flex items-center gap-2">
             {next.c.secret ? (
               <>??? — a hidden place</>
-            ) : next.c.revealAfter && !unlockedIds.has(next.c.revealAfter) ? (
-              <>??? — reach the Entrance to reveal</>
+            ) : next.c.revealAfter && unlockedIds.size === 0 ? (
+              <>??? — reach any checkpoint to reveal</>
             ) : (
               <>
                 <Sprite name={next.c.sprite} size={16} /> {next.c.name}

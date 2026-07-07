@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Checkpoint } from "../data/types";
 import { PixelButton } from "./PixelButton";
 import { Sprite } from "./Sprite";
-import { ParticipantRow, uploadPhoto } from "../lib/backend";
+import { uploadPhoto } from "../lib/backend";
 import { Identity } from "../lib/identity";
 import { formatDistance } from "../lib/geo";
 import { questionForCheckpoint, DURIAN_CHECKPOINT_ID } from "../data/reflection";
@@ -13,7 +13,6 @@ interface Props {
   checkpoint: Checkpoint;
   unlocked: boolean;
   distanceToIt: number | null;
-  walkers: ParticipantRow[];
   identity: Identity;
   onUnlock: (viaManual: boolean) => void;
   onClose: () => void;
@@ -23,7 +22,6 @@ export function CheckpointScreen({
   checkpoint,
   unlocked,
   distanceToIt,
-  walkers,
   identity,
   onUnlock,
   onClose,
@@ -39,13 +37,6 @@ export function CheckpointScreen({
   const inRange = distanceToIt != null && distanceToIt <= checkpoint.radius;
   const question = questionForCheckpoint(checkpoint.id);
   const alreadyAnswered = Boolean(answered[checkpoint.id]);
-
-  // Fun fairness rule kept from the original: whoever has walked the least
-  // takes the swing (now across all walkers, not a team).
-  const lowest =
-    checkpoint.type === "swing" && walkers.length > 0
-      ? [...walkers].sort((a, b) => a.distance_m - b.distance_m)[0]
-      : null;
 
   const handlePhoto = async (file: File) => {
     setUploading(true);
@@ -175,26 +166,6 @@ export function CheckpointScreen({
           <p className="text-[9px] leading-relaxed text-sand">
             {checkpoint.activity.body}
           </p>
-
-          {checkpoint.type === "swing" && (
-            <div className="mt-3 pixel-border bg-forest-950 p-3 text-center">
-              {lowest ? (
-                <>
-                  <div className="text-[8px] text-forest-300">TAKES THE SWING</div>
-                  <div className="text-[12px] text-clay animate-wiggle mt-1">
-                    {lowest.name}
-                  </div>
-                  <div className="text-[7px] text-sand mt-1">
-                    ({formatDistance(lowest.distance_m)} walked)
-                  </div>
-                </>
-              ) : (
-                <div className="text-[8px] text-forest-300">
-                  Waiting for walkers' distances…
-                </div>
-              )}
-            </div>
-          )}
 
           {checkpoint.type === "photo" && (
             <div className="mt-3 flex flex-col gap-2">

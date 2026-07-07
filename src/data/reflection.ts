@@ -113,25 +113,15 @@ export const QUESTIONS: ReflectionQuestion[] = [
 ];
 
 /**
- * Deterministic checkpoint → question mapping.
- * The gathering point (order 1) and secret checkpoints get no question. Each
- * remaining checkpoint can pin a specific question via its `questionId` (see
- * checkpoints.json) so the six questions are scattered intentionally; any
- * checkpoint left unpinned falls back to walking the dimensions in order,
- * looping if there are ever more than six.
+ * Checkpoint → question mapping is fully explicit: a checkpoint asks a question
+ * only if it pins one via `questionId` (see checkpoints.json). Everything else
+ * — the gathering point, the secret deck, and activity-only stops like the
+ * long-swing hut — simply has no `questionId` and therefore no reflection.
+ * This keeps each question at exactly one checkpoint no matter how many
+ * checkpoints are added or reordered.
  */
-const questionable = [...CHECKPOINTS]
-  .sort((a, b) => a.order - b.order)
-  .filter((c) => c.order > 1 && !c.secret);
-
 export function questionForCheckpoint(checkpointId: string): ReflectionQuestion | null {
-  const idx = questionable.findIndex((c) => c.id === checkpointId);
-  if (idx < 0) return null; // gathering point or secret: no reflection
-
-  // Explicit pin wins, so scattering survives reordering placeholder checkpoints.
-  const pinnedId = questionable[idx].questionId;
-  if (pinnedId) {
-    return QUESTIONS.find((q) => q.id === pinnedId) ?? QUESTIONS[idx % QUESTIONS.length];
-  }
-  return QUESTIONS[idx % QUESTIONS.length];
+  const cp = CHECKPOINTS.find((c) => c.id === checkpointId);
+  if (!cp?.questionId) return null;
+  return QUESTIONS.find((q) => q.id === cp.questionId) ?? null;
 }

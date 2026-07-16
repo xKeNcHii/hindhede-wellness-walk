@@ -50,6 +50,13 @@ create table photos (
 alter publication supabase_realtime add table participants;
 alter publication supabase_realtime add table checkpoint_progress;
 
+-- Deliver the full row (not just the primary key) on UPDATE/DELETE realtime
+-- events. Clients patch their local snapshot from the payload instead of
+-- re-fetching the whole table, so a DELETE must carry device_id to know which
+-- walker to remove. Cheap here (tiny rows) and required by the incremental sync.
+alter table participants replica identity full;
+alter table checkpoint_progress replica identity full;
+
 -- Open RLS (event-only; revisit before public use)
 alter table participants enable row level security;
 alter table checkpoint_progress enable row level security;

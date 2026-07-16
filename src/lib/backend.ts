@@ -173,30 +173,122 @@ export async function fetchSnapshot(): Promise<Snapshot> {
   return readLocal();
 }
 
+/**
+ * A single incremental change delivered by {@link subscribe}. Applying these
+ * to an existing {@link Snapshot} avoids re-fetching the whole dataset on every
+ * update — critical for staying under the Supabase free-tier bandwidth cap when
+ * dozens of walkers are all reporting positions at once.
+ *
+ * `reload` is only emitted by the local-only fallback (localStorage costs no
+ * bandwidth, so a full re-read there is free).
+ */
+export type Change =
+  | { kind: "participant-upsert"; row: ParticipantRow }
+  | { kind: "participant-delete"; deviceId: string }
+  | { kind: "checkpoint-upsert"; row: CheckpointRow }
+  | { kind: "checkpoint-delete"; deviceId: string; checkpointId: string }
+  | { kind: "reload" };
+
 /** Subscribe to changes. Returns an unsubscribe function. */
-export function subscribe(onChange: () => void): () => void {
+export function subscribe(onChange: (change: Change) => void): () => void {
   if (isRemote && supabase) {
     const client = supabase;
     const channel = client
       .channel("hww-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "participants" }, onChange)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "participants" },
+        (payload) => {
+          if (payload.eventType === "DELETE") {
+            // Requires REPLICA IDENTITY FULL on the table so `old` carries
+            // device_id (not just the uuid primary key). See schema.sql.
+            const deviceId = (payload.old as Partial<ParticipantRow>).device_id;
+            if (deviceId) onChange({ kind: "participant-delete", deviceId });
+          } else {
+            onChange({ kind: "participant-upsert", row: payload.new as ParticipantRow });
+          }
+        }
+      )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "checkpoint_progress" },
-        onChange
+        (payload) => {
+          if (payload.eventType === "DELETE") {
+            const old = payload.old as Partial<CheckpointRow>;
+            if (old.device_id && old.checkpoint_id) {
+              onChange({
+                kind: "checkpoint-delete",
+                deviceId: old.device_id,
+                checkpointId: old.checkpoint_id,
+              });
+            }
+          } else {
+            onChange({ kind: "checkpoint-upsert", row: payload.new as CheckpointRow });
+          }
+        }
       )
       .subscribe();
     return () => {
       client.removeChannel(channel);
     };
   }
-  const handler = () => onChange();
+  const handler = () => onChange({ kind: "reload" });
   window.addEventListener("hww-local-change", handler);
   window.addEventListener("storage", handler);
   return () => {
     window.removeEventListener("hww-local-change", handler);
     window.removeEventListener("storage", handler);
   };
+}
+
+/** Fold one incremental {@link Change} into an existing snapshot, returning a
+ * new snapshot (or the same reference when nothing changed). */
+export function applyChange(prev: Snapshot, change: Change): Snapshot {
+  switch (change.kind) {
+    case "participant-upsert": {
+      const idx = prev.participants.findIndex(
+        (p) => p.device_id === change.row.device_id
+      );
+      if (idx === -1) {
+        return { ...prev, participants: [...prev.participants, change.row] };
+      }
+      // Replace in place so map markers / list order stay stable.
+      const participants = prev.participants.slice();
+      participants[idx] = change.row;
+      return { ...prev, participants };
+    }
+    case "participant-delete": {
+      const participants = prev.participants.filter(
+        (p) => p.device_id !== change.deviceId
+      );
+      if (participants.length === prev.participants.length) return prev;
+      // Mirror the DB's ON DELETE CASCADE locally so the walker's checkpoint
+      // progress vanishes too, without waiting on separate cascade events.
+      return {
+        participants,
+        checkpoints: prev.checkpoints.filter((c) => c.device_id !== change.deviceId),
+      };
+    }
+    case "checkpoint-upsert": {
+      const exists = prev.checkpoints.some(
+        (c) =>
+          c.device_id === change.row.device_id &&
+          c.checkpoint_id === change.row.checkpoint_id
+      );
+      if (exists) return prev;
+      return { ...prev, checkpoints: [...prev.checkpoints, change.row] };
+    }
+    case "checkpoint-delete": {
+      const checkpoints = prev.checkpoints.filter(
+        (c) =>
+          !(c.device_id === change.deviceId && c.checkpoint_id === change.checkpointId)
+      );
+      if (checkpoints.length === prev.checkpoints.length) return prev;
+      return { ...prev, checkpoints };
+    }
+    default:
+      return prev;
+  }
 }
 
 export async function uploadPhoto(

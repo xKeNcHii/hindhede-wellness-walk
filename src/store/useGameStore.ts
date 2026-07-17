@@ -58,7 +58,10 @@ interface GameState {
 
 // Throttle backend writes (distance + live position) so we stay light on the
 // Supabase free tier and on battery — at most one sync per this interval.
-const SYNC_INTERVAL_MS = 6000;
+// At 20s, ~50 walkers over a 2h event stay well under the free-tier realtime
+// message quota (~0.9M of the 2M/month), since every write fans out to all
+// subscribers. Lower this only if you also cut the fan-out.
+const SYNC_INTERVAL_MS = 20000;
 let lastSyncAt = 0;
 
 function persist(get: () => GameState) {
